@@ -24,7 +24,7 @@ debug:
 	@mvn clean package $(DEBUG_FLAGS)
 	$(MAKE) exec
 
-exec:
+exec: compile
 	@$(EXECUTOR) $(EXECUTABLE)
 
 remote:
