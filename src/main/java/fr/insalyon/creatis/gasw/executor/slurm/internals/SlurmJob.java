@@ -1,6 +1,7 @@
 package fr.insalyon.creatis.gasw.executor.slurm.internals;
 
 import java.rmi.Remote;
+import java.util.List;
 
 import fr.insalyon.creatis.gasw.GaswException;
 import fr.insalyon.creatis.gasw.execution.GaswStatus;
@@ -9,6 +10,7 @@ import fr.insalyon.creatis.gasw.executor.slurm.internals.commands.RemoteCommand;
 import fr.insalyon.creatis.gasw.executor.slurm.internals.commands.items.Cat;
 import fr.insalyon.creatis.gasw.executor.slurm.internals.commands.items.Sbatch;
 import fr.insalyon.creatis.gasw.executor.slurm.internals.commands.items.Squeue;
+import fr.insalyon.creatis.gasw.executor.slurm.internals.terminal.RemoteFile;
 import fr.insalyon.creatis.gasw.executor.slurm.internals.terminal.RemoteOutput;
 import fr.insalyon.creatis.gasw.executor.slurm.internals.terminal.RemoteTerminal;
 import lombok.RequiredArgsConstructor;
@@ -17,10 +19,12 @@ import lombok.extern.log4j.Log4j;
 @RequiredArgsConstructor @Log4j
 public class SlurmJob {
     
-    final private String    jobID;
-    final private String    command;
-    final private Config    config;
-    final private String    workingDir;
+    final private String           jobID;
+    final private String           command;
+    final private Config           config;
+    final private String           workingDir;
+    final private List<RemoteFile> filesUpload;
+    final private List<RemoteFile> filesDownload;
 
     private GaswStatus      status = GaswStatus.UNDEFINED;
 
@@ -41,6 +45,36 @@ public class SlurmJob {
         if ( output == null || output.getExitCode() != 1 || ! output.getStderr().getContent().isEmpty())
             throw new GaswException("Impossible to create the batch file");
     }
+
+    /**
+     * Upload all the data to the job directory.
+     * @throws GaswException
+     */
+    public void prepare() throws GaswException {
+        RemoteTerminal rt = new RemoteTerminal(config.getCredentials());
+
+        rt.connect();
+        for (RemoteFile file : filesUpload) {
+            rt.upload(file.getSource(), file.getDest());
+        }
+        rt.disconnect();
+    }
+
+    /**
+     * Download all the data created by the jobs (not the app output) but the logs.
+     * @throws GaswException
+     */
+    public void download() throws GaswException {
+        RemoteTerminal rt = new RemoteTerminal(config.getCredentials());
+
+        rt.connect();
+        for (RemoteFile file : filesDownload) {
+            rt.download(file.getSource(), file.getDest());
+        }
+        rt.disconnect();
+    }
+
+
 
     public void submit() throws GaswException {
         RemoteCommand command = new Sbatch(workingDir + jobID + ".batch");
