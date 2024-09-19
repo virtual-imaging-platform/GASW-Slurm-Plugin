@@ -1,4 +1,4 @@
-package fr.insalyon.creatis.gasw.executor.slurm.internals;
+package fr.insalyon.creatis.gasw.executor.slurm.internals.terminal;
 
 import fr.insalyon.creatis.gasw.executor.slurm.config.Constants;
 import lombok.Getter;

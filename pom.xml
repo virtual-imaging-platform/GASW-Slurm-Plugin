@@ -37,7 +37,7 @@
                 <configuration>
                     <archive>
                         <manifest>
-                            <mainClass>fr.insalyon.creatis.gasw.executor.slurm.internals.RemoteTerminal</mainClass>
+                            <mainClass>fr.insalyon.creatis.gasw.executor.slurm.internals.Main</mainClass>
                             <!-- <mainClass>fr.insalyon.creatis.gasw.Gasw</mainClass> -->
                         </manifest>
                     </archive>

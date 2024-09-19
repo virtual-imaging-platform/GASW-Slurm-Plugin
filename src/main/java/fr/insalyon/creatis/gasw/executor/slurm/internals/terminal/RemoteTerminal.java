@@ -1,4 +1,4 @@
-package fr.insalyon.creatis.gasw.executor.slurm.internals;
+package fr.insalyon.creatis.gasw.executor.slurm.internals.terminal;
 
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
@@ -11,12 +11,10 @@ import org.apache.sshd.client.channel.ClientChannelEvent;
 import org.apache.sshd.client.session.ClientSession;
 
 import fr.insalyon.creatis.gasw.GaswException;
+import fr.insalyon.creatis.gasw.executor.slurm.internals.RemoteConfiguration;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.log4j.Log4j;
 
-/**
- * RemoteTerminal
- */
 @RequiredArgsConstructor @Log4j
 public class RemoteTerminal {
 
@@ -90,21 +88,6 @@ public class RemoteTerminal {
         } catch (GaswException e) {
             log.error("Failed to execute oneCommand !");
             return null;
-        }
-    }
-    public static void main(String[] args) {
-        String command = "sinfo";
-        RemoteConfiguration config = new RemoteConfiguration("192.168.122.152", 22, "almalinux", "ethaniel");
-        try {
-            RemoteTerminal term = new RemoteTerminal(config);
-            term.init();
-            term.connect();
-            RemoteOutput out = term.executeCommand(command);
-            System.err.println(out.getStdout().getContent());
-            term.disconnect();
-
-        } catch (Exception e) {
-            e.printStackTrace();
         }
     }
 }

@@ -1,4 +1,4 @@
-package fr.insalyon.creatis.gasw.executor.slurm.internals;
+package fr.insalyon.creatis.gasw.executor.slurm.internals.terminal;
 
 import lombok.Getter;
 
@@ -14,7 +14,4 @@ public class RemoteOutput {
         this.stderr = new RemoteStream(stderr);
         this.exitCode = exitCode;
     }
-    // parse
-    // getNextLine
-    // split columns
 }
