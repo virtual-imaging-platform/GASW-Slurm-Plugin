@@ -10,19 +10,57 @@ import org.apache.sshd.client.channel.ChannelExec;
 import org.apache.sshd.client.channel.ClientChannelEvent;
 import org.apache.sshd.client.session.ClientSession;
 
+import fr.insalyon.creatis.gasw.GaswException;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.log4j.Log4j;
 
 /**
  * RemoteTerminal
  */
-@RequiredArgsConstructor
+@RequiredArgsConstructor @Log4j
 public class RemoteTerminal {
 
     final private RemoteConfiguration   config;
     private SshClient                   client;
     private ClientSession               session;
 
-    private void exec(String command) {
+    private void init() {
+        client = SshClient.setUpDefaultClient();
+        client.start();
+    }
+
+    public void connect() throws GaswException {
+        init();
+
+        try {
+            session = client.connect(config.getUser(), config.getHost(), config.getPort())
+                .verify(10, TimeUnit.SECONDS)
+                .getClientSession();
+
+            session.addPasswordIdentity(config.getPassword());
+            session.auth().verify(10, TimeUnit.SECONDS);
+            
+        } catch (IOException e) {
+            log.error(e);
+            throw new GaswException("Failed to connect to ssh");
+        }
+    }
+    
+    /**
+     * @see RFC 4253
+     */
+    public void disconnect() throws GaswException {
+        try {
+            session.disconnect(11, "Session ended");
+            client.stop();
+        } catch (IOException e) {
+            log.error(e);
+            client.stop();
+            throw new GaswException("Failed to disconnect");
+        }
+    }
+
+    public RemoteOutput executeCommand(String command) {
         try (ByteArrayOutputStream stdout = new ByteArrayOutputStream();
                  ByteArrayOutputStream stderr = new ByteArrayOutputStream();
                  ChannelExec channel = session.createExecChannel(command)) {
@@ -33,45 +71,37 @@ public class RemoteTerminal {
                 channel.open().verify(10, TimeUnit.SECONDS);
                 channel.waitFor(EnumSet.of(ClientChannelEvent.CLOSED), 1000);
 
-                System.out.println("Standard Output: " + stdout.toString());
-                System.out.println("Standard Error: " + stderr.toString());
-        } catch (IOException e) {}
-    }
-
-    public void init() {
-        client = SshClient.setUpDefaultClient();
-        client.start();
-    }
-
-    public RemoteTerminal connect() {
-        try {
-            session = client.connect(config.getUser(), config.getHost(), config.getPort())
-                .verify(10, TimeUnit.SECONDS)
-                .getClientSession();
-
-            session.addPasswordIdentity(config.getPassword());
-            session.auth().verify(10, TimeUnit.SECONDS);
-            
-            return this;
-        } catch (Exception e) {
-            e.printStackTrace();
+                return (new RemoteOutput(stdout.toString(), stderr.toString(), channel.getExitStatus()));
+        } catch (IOException e) {
             return null;
         }
     }
-    
-    public void destroy() {
-        client.stop();
-    }
 
+    public static RemoteOutput oneCommand(RemoteConfiguration config, String command) {
+        RemoteTerminal term = new RemoteTerminal(config);
+        RemoteOutput result = null;
+
+        try {
+            term.connect();
+            result = term.executeCommand(command);
+            term.disconnect();
+
+            return result;
+        } catch (GaswException e) {
+            log.error("Failed to execute oneCommand !");
+            return null;
+        }
+    }
     public static void main(String[] args) {
-        String command = "echo $USER est vraiment situé ici $PWD";
+        String command = "sinfo";
         RemoteConfiguration config = new RemoteConfiguration("192.168.122.152", 22, "almalinux", "ethaniel");
         try {
             RemoteTerminal term = new RemoteTerminal(config);
             term.init();
             term.connect();
-            term.exec("sleep 500");
-            term.destroy();
+            RemoteOutput out = term.executeCommand(command);
+            System.err.println(out.getStdout().getContent());
+            term.disconnect();
 
         } catch (Exception e) {
             e.printStackTrace();
