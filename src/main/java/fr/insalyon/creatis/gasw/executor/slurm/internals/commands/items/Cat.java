@@ -2,13 +2,13 @@ package fr.insalyon.creatis.gasw.executor.slurm.internals.commands.items;
 
 import fr.insalyon.creatis.gasw.executor.slurm.internals.commands.RemoteCommand;
 
-public class Mkdir extends RemoteCommand {
+public class Cat extends RemoteCommand {
 
-    public Mkdir (String folderToCreate, String options) {
-        super("mkdir " + options + " " + folderToCreate);
+    public Cat(String file) {
+        super("cat " + file);
     }
-
+    
     public String result() {
-        return "";
+        return getOutput().getStdout().getContent();
     }
 }

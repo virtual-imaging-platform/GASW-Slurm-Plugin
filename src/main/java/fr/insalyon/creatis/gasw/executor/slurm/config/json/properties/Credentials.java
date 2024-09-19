@@ -3,8 +3,9 @@ package fr.insalyon.creatis.gasw.executor.slurm.config.json.properties;
 import com.fasterxml.jackson.annotation.JsonProperty;
 
 import lombok.Getter;
+import lombok.Setter;
 
-@Getter
+@Getter @Setter
 public class Credentials {
     
     @JsonProperty(value = "host", required = true)
@@ -18,4 +19,7 @@ public class Credentials {
 
     @JsonProperty(value = "password", required = true)
     private String  password;
+
+    @JsonProperty(value = "workingDir", required = true)
+    private String  workingDir; /* should contain the / at the end */
 }

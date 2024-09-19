@@ -2,6 +2,7 @@ package fr.insalyon.creatis.gasw.executor.slurm.internals.terminal;
 
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
+import java.nio.file.Paths;
 import java.util.EnumSet;
 import java.util.concurrent.TimeUnit;
 
@@ -9,16 +10,19 @@ import org.apache.sshd.client.SshClient;
 import org.apache.sshd.client.channel.ChannelExec;
 import org.apache.sshd.client.channel.ClientChannelEvent;
 import org.apache.sshd.client.session.ClientSession;
+import org.apache.sshd.scp.client.ScpClient;
+import org.apache.sshd.scp.client.ScpClientCreator;
 
+import fr.insalyon.creatis.gasw.Gasw;
 import fr.insalyon.creatis.gasw.GaswException;
-import fr.insalyon.creatis.gasw.executor.slurm.internals.RemoteConfiguration;
+import fr.insalyon.creatis.gasw.executor.slurm.config.json.properties.Credentials;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.log4j.Log4j;
 
 @RequiredArgsConstructor @Log4j
 public class RemoteTerminal {
 
-    final private RemoteConfiguration   config;
+    final private Credentials           config;
     private SshClient                   client;
     private ClientSession               session;
 
@@ -31,7 +35,7 @@ public class RemoteTerminal {
         init();
 
         try {
-            session = client.connect(config.getUser(), config.getHost(), config.getPort())
+            session = client.connect(config.getUsername(), config.getHost(), config.getPort())
                 .verify(10, TimeUnit.SECONDS)
                 .getClientSession();
 
@@ -58,6 +62,31 @@ public class RemoteTerminal {
         }
     }
 
+    public void upload(String localFile, String remoteLocation) throws GaswException {
+        ScpClientCreator creator = ScpClientCreator.instance();
+        ScpClient scpClient = creator.createScpClient(session);
+
+        try {
+            scpClient.upload(Paths.get(localFile), remoteLocation);
+        } catch (IOException e) {
+            log.error(e);
+            throw new GaswException("Failed to upload file on remote !");
+        }
+    }
+
+    public void download(String remoteFile, String localLocation) throws GaswException {
+        ScpClientCreator creator = ScpClientCreator.instance();
+        ScpClient scpClient = creator.createScpClient(session);
+
+        try {
+            scpClient.download(remoteFile, Paths.get(localLocation));
+        } catch (IOException e) {
+            log.error(e);
+            throw new GaswException("Failed to upload file on remote !");
+        }
+    }
+
+
     public RemoteOutput executeCommand(String command) {
         try (ByteArrayOutputStream stdout = new ByteArrayOutputStream();
                  ByteArrayOutputStream stderr = new ByteArrayOutputStream();
@@ -75,7 +104,7 @@ public class RemoteTerminal {
         }
     }
 
-    public static RemoteOutput oneCommand(RemoteConfiguration config, String command) {
+    public static RemoteOutput oneCommand(Credentials config, String command) {
         RemoteTerminal term = new RemoteTerminal(config);
         RemoteOutput result = null;
 
