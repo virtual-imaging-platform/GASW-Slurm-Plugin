@@ -37,8 +37,8 @@
                 <configuration>
                     <archive>
                         <manifest>
-                            <mainClass>fr.insalyon.creatis.gasw.executor.slurm.internals.Main</mainClass>
-                            <!-- <mainClass>fr.insalyon.creatis.gasw.Gasw</mainClass> -->
+                            <!-- <mainClass>fr.insalyon.creatis.gasw.executor.slurm.internals.Main</mainClass> -->
+                            <mainClass>fr.insalyon.creatis.gasw.Gasw</mainClass>
                         </manifest>
                     </archive>
                     <descriptorRefs>
@@ -64,6 +64,11 @@
 
     <dependencies>
         <dependency>
+            <groupId>joda-time</groupId>
+            <artifactId>joda-time</artifactId>
+            <version>2.13.0</version>
+        </dependency>        
+        <dependency>
 			<groupId>com.fasterxml.jackson.core</groupId>
 			<artifactId>jackson-databind</artifactId>
 			<version>2.17.2</version>
@@ -83,7 +88,7 @@
             <groupId>fr.insalyon.creatis</groupId>
             <artifactId>gasw</artifactId>
             <version>${gasw-version}</version>
-            <!-- <scope>provided</scope> -->
+            <scope>provided</scope>
         </dependency>
 		<dependency>
 		    <groupId>org.projectlombok</groupId>

@@ -1,24 +1,29 @@
 package fr.insalyon.creatis.gasw.executor.slurm.internals;
 
-import java.rmi.Remote;
 import java.util.List;
 
+import fr.insalyon.creatis.gasw.Gasw;
 import fr.insalyon.creatis.gasw.GaswException;
 import fr.insalyon.creatis.gasw.execution.GaswStatus;
 import fr.insalyon.creatis.gasw.executor.slurm.config.json.properties.Config;
 import fr.insalyon.creatis.gasw.executor.slurm.internals.commands.RemoteCommand;
 import fr.insalyon.creatis.gasw.executor.slurm.internals.commands.items.Cat;
+import fr.insalyon.creatis.gasw.executor.slurm.internals.commands.items.Mkdir;
 import fr.insalyon.creatis.gasw.executor.slurm.internals.commands.items.Sbatch;
+import fr.insalyon.creatis.gasw.executor.slurm.internals.commands.items.Scontrol;
 import fr.insalyon.creatis.gasw.executor.slurm.internals.commands.items.Squeue;
 import fr.insalyon.creatis.gasw.executor.slurm.internals.terminal.RemoteFile;
 import fr.insalyon.creatis.gasw.executor.slurm.internals.terminal.RemoteOutput;
 import fr.insalyon.creatis.gasw.executor.slurm.internals.terminal.RemoteTerminal;
+import lombok.Getter;
 import lombok.RequiredArgsConstructor;
+import lombok.Setter;
 import lombok.extern.log4j.Log4j;
 
 @RequiredArgsConstructor @Log4j
 public class SlurmJob {
     
+    @Getter
     final private String           jobID;
     final private String           command;
     final private Config           config;
@@ -26,24 +31,36 @@ public class SlurmJob {
     final private List<RemoteFile> filesUpload;
     final private List<RemoteFile> filesDownload;
 
-    private GaswStatus      status = GaswStatus.UNDEFINED;
+    @Setter @Getter
+    private String                 slurmJobID = null;
+
+    @Setter
+    private GaswStatus      status = GaswStatus.NOT_SUBMITTED;
+
+    @Setter @Getter
+    private boolean         terminated = false;
 
     private void createBatchFile() throws GaswException {
         StringBuilder builder = new StringBuilder();
         RemoteOutput output;
 
-        builder.append("#!/bin/sh");
-        builder.append("#SBATCH --job-name=" + jobID);
-        builder.append("#SBATCH --output=" + jobID + ".out");
-        builder.append("#SBATCH --error=" + jobID + ".err");
-        builder.append("cd " + workingDir);
-        builder.append(command);
-        builder.append("echo $? > " + jobID + ".exit");
+        builder.append("#!/bin/sh\n");
+        builder.append("#SBATCH --job-name=" + jobID + "\n");
+        builder.append("#SBATCH --output=" + workingDir + "out/" + jobID + ".out\n");
+        builder.append("#SBATCH --error=" + workingDir + "err/" + jobID + ".err\n");
+        builder.append("module load bosh\n");
+        builder.append("module load python\n");
+        builder.append("cd " + workingDir + "\n");
+        builder.append("echo $PWD\n");
+        builder.append(command + "\n");
+        builder.append("echo $? > " + jobID + ".exit\n");
 
-        output = RemoteTerminal.oneCommand(config.getCredentials(), "echo \"" + builder.toString() + "\" > " + workingDir + jobID + ".batch");
+        output = RemoteTerminal.oneCommand(config.getCredentials(), "echo -en '" + builder.toString() + "' > " + workingDir + jobID + ".batch");
 
-        if ( output == null || output.getExitCode() != 1 || ! output.getStderr().getContent().isEmpty())
+        if ( output == null || output.getExitCode() != 0 || ! output.getStderr().getContent().isEmpty()) {
+            System.out.println(output.getStderr().getContent());
             throw new GaswException("Impossible to create the batch file");
+        }
     }
 
     /**
@@ -69,9 +86,11 @@ public class SlurmJob {
 
         rt.connect();
         for (RemoteFile file : filesDownload) {
+            System.err.println("je dois telecharger " + file.getSource());
             rt.download(file.getSource(), file.getDest());
         }
         rt.disconnect();
+        System.err.println("j'ai telecharger les outputs");
     }
 
 
@@ -84,19 +103,35 @@ public class SlurmJob {
 
             if (command.failed())
                 throw new GaswException("Command failed !");
+            slurmJobID = command.result();
+            System.err.println("VOICI LE BTACH JOB " + command.result() + " | " + command.getOutput().getStdout().getContent());
             
         } catch (GaswException e) {
             throw new GaswException("Failed subbmit the job " + e.getMessage());
         }
     }
 
+    public void start() throws GaswException {
+        System.err.println("je prepare");
+        prepare();
+        System.err.println("je batch");
+        createBatchFile();
+        System.err.println("je submit");
+        submit();
+        setStatus(GaswStatus.SUCCESSFULLY_SUBMITTED);
+    }
+
     private GaswStatus getStatusRequest() {
-        RemoteCommand command = new Squeue(jobID);
+        RemoteCommand command = new Scontrol(slurmJobID);
         String result = null;
 
         try {
-            result = command.execute(config.getCredentials()).result();
+            command.execute(config.getCredentials());
 
+            System.out.println("ici bb " + command.getOutput().getStderr().getContent());
+            if (command.failed())
+                return GaswStatus.UNDEFINED;
+            result = command.result();
             if (result == null)
                 return GaswStatus.UNDEFINED;
 
@@ -136,7 +171,7 @@ public class SlurmJob {
                 System.err.println("FAILED TO CAT THE FILE");
                 return 1;
             }
-            return Integer.parseInt(command.result());
+            return Integer.parseInt(command.result().trim());
 
         } catch (GaswException e){
             log.error("Can't retrieve exitcode " + e.getMessage());

@@ -1,10 +1,9 @@
 package fr.insalyon.creatis.gasw.executor.slurm.config.json;
 
 import java.io.File;
-import java.io.ObjectInputFilter.Config;
-
 import com.fasterxml.jackson.databind.ObjectMapper;
 
+import fr.insalyon.creatis.gasw.executor.slurm.config.json.properties.Config;
 import lombok.extern.log4j.Log4j;
 
 @Log4j

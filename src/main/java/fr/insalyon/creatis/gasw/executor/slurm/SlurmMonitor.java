@@ -1,6 +1,8 @@
 package fr.insalyon.creatis.gasw.executor.slurm;
 
+import java.util.ArrayList;
 import java.util.Date;
+import java.util.List;
 
 import fr.insalyon.creatis.gasw.GaswConfiguration;
 import fr.insalyon.creatis.gasw.GaswException;
@@ -9,15 +11,21 @@ import fr.insalyon.creatis.gasw.dao.DAOException;
 import fr.insalyon.creatis.gasw.execution.GaswMonitor;
 import fr.insalyon.creatis.gasw.execution.GaswStatus;
 import fr.insalyon.creatis.gasw.executor.slurm.config.Constants;
+import fr.insalyon.creatis.gasw.executor.slurm.internals.SlurmJob;
+import fr.insalyon.creatis.gasw.executor.slurm.internals.SlurmManager;
+import lombok.Getter;
+import lombok.Setter;
 import lombok.extern.log4j.Log4j;
 
 @Log4j
 public class SlurmMonitor extends GaswMonitor {
 
     private static SlurmMonitor instance;
-    
-    // private List<KJob>      finishedJobs;
-    private boolean 		stop;
+
+    @Getter @Setter
+    private SlurmManager  manager;
+    private List<SlurmJob>      finishedJobs;
+    private boolean 		    stop;
 
     public synchronized static SlurmMonitor getInstance() {
         if (instance == null) {
@@ -29,41 +37,57 @@ public class SlurmMonitor extends GaswMonitor {
 
     private SlurmMonitor() {
         super();
-        // finishedJobs = new ArrayList<KJob>();
+        finishedJobs = new ArrayList<SlurmJob>();
         stop = false;
+    }
+
+    private void statusChecker() {
+        List<SlurmJob> jobs = manager.getUnfinishedJob();
+
+        for (SlurmJob j : jobs) {
+            GaswStatus stus = j.getStatus();
+
+            System.err.println("job : " + j.getJobID() + " : " + stus.toString());
+            if (stus != GaswStatus.RUNNING && stus != GaswStatus.QUEUED && stus != GaswStatus.UNDEFINED && stus != GaswStatus.NOT_SUBMITTED) {
+                j.setTerminated(true);
+                finishedJobs.add(j);
+            } else if (stus ==  GaswStatus.RUNNING) {
+                updateJob(j.getJobID(), stus);
+            }
+        }
     }
 
     @Override
     public void run() {
         while (!stop) {
-            // System.err.println("je fais le check des jobs en cours !");
-            // statusChecker();
-            // try {
-            //     while (hasFinishedJobs()) {
-            //         KJob kJob = pullFinishedJobID();
-            //         GaswStatus status = kJob.getStatus();
-            //         Job job = jobDAO.getJobByID(kJob.getData().getJobID());
+            System.err.println("je fais le check des jobs en cours !");
+            statusChecker();
+            try {
+                while (hasFinishedJobs()) {
+                    SlurmJob sJob = pullFinishedJobID();
+                    GaswStatus status = sJob.getStatus();
+                    Job job = jobDAO.getJobByID(sJob.getJobID());
                     
-            //         if (status == GaswStatus.ERROR || status == GaswStatus.COMPLETED) {
-            //             job.setExitCode(kJob.getExitCode());
-            //             job.setStatus(job.getExitCode() == 0 ? GaswStatus.COMPLETED : GaswStatus.ERROR);
-            //         } else {
-            //             job.setStatus(status);
-            //         }
-            //         System.err.println("job : " + kJob.getData().getJobID() + " final : " + job.getStatus());
+                    if (status == GaswStatus.ERROR || status == GaswStatus.COMPLETED) {
+                        job.setExitCode(sJob.getExitCode());
+                        job.setStatus(job.getExitCode() == 0 ? GaswStatus.COMPLETED : GaswStatus.ERROR);
+                    } else {
+                        job.setStatus(status);
+                    }
+                    System.err.println("job : " + sJob.getJobID() + " final : " + job.getStatus());
                     
-            //         jobDAO.update(job);
-            //         new KOutputParser(job.getId(), manager).start();
-            //     }
+                    jobDAO.update(job);
+                    new SlurmOutputParser(sJob).start();
+                }
 
-            //     Thread.sleep(GaswConfiguration.getInstance().getDefaultSleeptime());
+                Thread.sleep(GaswConfiguration.getInstance().getDefaultSleeptime());
 
-            // } catch (GaswException ex) {
-            // } catch (DAOException ex) {
-            //     log.error(ex);
-            // } catch (InterruptedException ex) {
-            //     log.error(ex);
-            // }
+            } catch (GaswException ex) {
+            } catch (DAOException ex) {
+                log.error(ex);
+            } catch (InterruptedException ex) {
+                log.error(ex);
+            }
         }
     }
 
@@ -84,20 +108,20 @@ public class SlurmMonitor extends GaswMonitor {
         }
     }
 
-    // public KJob pullFinishedJobID() {
-        // KJob lastJob = finishedJobs.get(0);
-// 
-        // finishedJobs.remove(lastJob);
-        // return lastJob;
-    // }
+    public SlurmJob pullFinishedJobID() {
+        SlurmJob lastJob = finishedJobs.get(0);
 
-    // public boolean hasFinishedJobs() {
-        // return ! finishedJobs.isEmpty();
-    // }
+        finishedJobs.remove(lastJob);
+        return lastJob;
+    }
 
-    // public synchronized void addFinishedJob(KJob job) {
-        // finishedJobs.add(job);
-    // }
+    public boolean hasFinishedJobs() {
+        return ! finishedJobs.isEmpty();
+    }
+
+    public synchronized void addFinishedJob(SlurmJob job) {
+        finishedJobs.add(job);
+    }
 
     public synchronized void finish() {
         if (instance != null) {

@@ -1,7 +1,15 @@
 {
     "credentials": {
-
+        "host": "192.168.122.152",
+        "port": 22,
+        "username": "almalinux",
+        "password": "ethaniel",
+        "workingDir": "slurm-working-dir/"
     },
 	"options": {
+        "commandExecutionTimeout": 10,
+        "sshEventTimeout": 10,
+        "statusRetry": 10,
+        "statusRetryWait": 10
 	}
 }

@@ -2,6 +2,7 @@ package fr.insalyon.creatis.gasw.executor.slurm.internals.terminal;
 
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
+import java.nio.file.Files;
 import java.nio.file.Paths;
 import java.util.EnumSet;
 import java.util.concurrent.TimeUnit;
@@ -13,7 +14,6 @@ import org.apache.sshd.client.session.ClientSession;
 import org.apache.sshd.scp.client.ScpClient;
 import org.apache.sshd.scp.client.ScpClientCreator;
 
-import fr.insalyon.creatis.gasw.Gasw;
 import fr.insalyon.creatis.gasw.GaswException;
 import fr.insalyon.creatis.gasw.executor.slurm.config.json.properties.Credentials;
 import lombok.RequiredArgsConstructor;
@@ -79,10 +79,18 @@ public class RemoteTerminal {
         ScpClient scpClient = creator.createScpClient(session);
 
         try {
+            System.err.println("elles vont : " + localLocation);
             scpClient.download(remoteFile, Paths.get(localLocation));
+
+            log.info("le dossier courant " + System.getProperty("user.dir") + " blab blaexist!");
+
+            if (Files.exists(Paths.get(localLocation))) {
+                log.info("le fichier " + localLocation + " exist!");
+
+            }
         } catch (IOException e) {
             log.error(e);
-            throw new GaswException("Failed to upload file on remote !");
+            throw new GaswException("Failed to download file on remote !");
         }
     }
 
@@ -92,6 +100,7 @@ public class RemoteTerminal {
                  ByteArrayOutputStream stderr = new ByteArrayOutputStream();
                  ChannelExec channel = session.createExecChannel(command)) {
 
+                System.err.println("ici la command : " + command);
                 channel.setOut(stdout);
                 channel.setErr(stderr);
 

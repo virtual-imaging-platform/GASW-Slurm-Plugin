@@ -7,6 +7,7 @@ public class Constants {
     public final static String splitRegex = "\\s+";
 
     // GASW
-    public final static String EXECUTOR_NAME = "Slurm";
+    /* ICI A CHANGER */
+    public final static String EXECUTOR_NAME = "Kubernetes";
 
 }
