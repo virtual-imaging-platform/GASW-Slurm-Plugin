@@ -37,28 +37,33 @@ public class SlurmManager {
         this.workingDir = config.getCredentials().getWorkingDir() + workflowId;
     }
 
-    /**
-     * Create directory inside the workflow folder
-     */
     public void init() {
-        RemoteCommand remoteCommand = new Mkdir(getWorkingDir(), "");
-        RemoteCommand remoteDirErr = new Mkdir(getWorkingDir() + "/out", "-p");
-        RemoteCommand remoteDirOut = new Mkdir(getWorkingDir() + "/err", "-p");
-        RemoteCommand remoteDirSh = new Mkdir(getWorkingDir() + "/sh", "-p");
-
         try {
-            remoteCommand.execute(config);
-            remoteDirErr.execute(config);
-            remoteDirOut.execute(config);
-            remoteDirSh.execute(config);
-
-            if (remoteCommand.failed() || remoteDirErr.failed() || remoteDirOut.failed() || remoteDirSh.failed())
-                throw new GaswException("");
-
+            checkRemoteDirs();
             checkLocalOutputsDir();
+
             init = true;
         } catch (GaswException e) {
             log.error("Failed to init the slurm manager !");
+        }
+    }
+
+    /**
+     * Create the necessary directories on the remote (slurm cluster)
+     */
+    public void checkRemoteDirs() throws GaswException {
+        List<RemoteCommand> commands = new ArrayList<RemoteCommand>();
+
+        commands.add(new Mkdir(getWorkingDir(), ""));
+        commands.add(new Mkdir(getWorkingDir() + "/out", "-p"));
+        commands.add(new Mkdir(getWorkingDir() + "/err", "-p"));
+        commands.add(new Mkdir(getWorkingDir() + "/sh", "-p"));
+
+        for (RemoteCommand command : commands) {
+            command.execute(config);
+
+            if (command.failed())
+                throw new GaswException("Failed to create the remotes dirs !");
         }
     }
 
@@ -80,13 +85,13 @@ public class SlurmManager {
         RemoteCommand remoteCommand = new Rm(config.getCredentials().getWorkingDir() + workflowId, "-rf");
 
         end = true;
-        // try {
-        //     if (remoteCommand.execute(config).failed())
-        //         throw new GaswException("");
+        try {
+            if (remoteCommand.execute(config).failed())
+                throw new GaswException("");
             
-        // } catch (GaswException e) {
-        //     log.error("Failed to desroy the slurm manager !");
-        // }
+        } catch (GaswException e) {
+            log.error("Failed to desroy the slurm manager !");
+        }
     }
 
     private void submitter(SlurmJob exec) {

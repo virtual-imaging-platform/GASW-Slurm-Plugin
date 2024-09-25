@@ -8,7 +8,7 @@
     },
 	"options": {
         "commandExecutionTimeout": 10,
-        "sshEventTimeout": 10,
+        "sshEventTimeout": 1000,
         "statusRetry": 10,
         "statusRetryWait": 10
 	}

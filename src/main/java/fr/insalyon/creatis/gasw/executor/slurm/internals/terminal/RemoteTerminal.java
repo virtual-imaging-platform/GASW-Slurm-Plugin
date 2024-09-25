@@ -24,11 +24,11 @@ import lombok.extern.log4j.Log4j;
 @Log4j
 public class RemoteTerminal {
 
-    final private Config                config;
-    final private Credentials           cred;
+    final private Config            config;
+    final private Credentials       cred;
 
-    private SshClient                   client;
-    private ClientSession               session;
+    private SshClient               client;
+    private ClientSession           session;
 
     public RemoteTerminal(Config config) {
         this.config = config;
@@ -99,7 +99,6 @@ public class RemoteTerminal {
                  ByteArrayOutputStream stderr = new ByteArrayOutputStream();
                  ChannelExec channel = session.createExecChannel(command)) {
 
-                System.err.println("ici la command : " + command);
                 channel.setOut(stdout);
                 channel.setErr(stderr);
 

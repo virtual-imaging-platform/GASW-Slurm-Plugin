@@ -23,7 +23,7 @@ public class SlurmMonitor extends GaswMonitor {
     private static SlurmMonitor instance;
 
     @Getter @Setter
-    private SlurmManager  manager;
+    private SlurmManager        manager;
     private List<SlurmJob>      finishedJobs;
     private boolean 		    stop;
 
@@ -60,7 +60,6 @@ public class SlurmMonitor extends GaswMonitor {
     @Override
     public void run() {
         while (!stop) {
-            System.err.println("je fais le check des jobs en cours !");
             statusChecker();
             try {
                 while (hasFinishedJobs()) {

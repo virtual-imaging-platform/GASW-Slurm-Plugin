@@ -5,9 +5,9 @@ import lombok.Getter;
 @Getter
 public class RemoteOutput {
     
-    final private RemoteStream  stdout;
-    final private RemoteStream  stderr;
-    final private int           exitCode;
+    final private RemoteStream      stdout;
+    final private RemoteStream      stderr;
+    final private int               exitCode;
 
     public RemoteOutput(String stdout, String stderr, int exitCode) {
         this.stdout = new RemoteStream(stdout);

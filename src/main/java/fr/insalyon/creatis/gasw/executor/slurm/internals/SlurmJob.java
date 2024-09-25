@@ -109,7 +109,6 @@ public class SlurmJob {
         try {
             command.execute(data.getConfig());
 
-            System.out.println("ici bb " + command.getOutput().getStderr().getContent());
             if (command.failed())
                 return GaswStatus.UNDEFINED;
             result = command.result();
