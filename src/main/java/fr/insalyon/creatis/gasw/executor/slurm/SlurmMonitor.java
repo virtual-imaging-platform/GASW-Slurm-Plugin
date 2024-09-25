@@ -47,12 +47,12 @@ public class SlurmMonitor extends GaswMonitor {
         for (SlurmJob j : jobs) {
             GaswStatus stus = j.getStatus();
 
-            System.err.println("job : " + j.getJobID() + " : " + stus.toString());
+            System.err.println("job : " + j.getData().getJobID() + " : " + stus.toString());
             if (stus != GaswStatus.RUNNING && stus != GaswStatus.QUEUED && stus != GaswStatus.UNDEFINED && stus != GaswStatus.NOT_SUBMITTED) {
                 j.setTerminated(true);
                 finishedJobs.add(j);
             } else if (stus ==  GaswStatus.RUNNING) {
-                updateJob(j.getJobID(), stus);
+                updateJob(j.getData().getJobID(), stus);
             }
         }
     }
@@ -66,7 +66,7 @@ public class SlurmMonitor extends GaswMonitor {
                 while (hasFinishedJobs()) {
                     SlurmJob sJob = pullFinishedJobID();
                     GaswStatus status = sJob.getStatus();
-                    Job job = jobDAO.getJobByID(sJob.getJobID());
+                    Job job = jobDAO.getJobByID(sJob.getData().getJobID());
                     
                     if (status == GaswStatus.ERROR || status == GaswStatus.COMPLETED) {
                         job.setExitCode(sJob.getExitCode());
@@ -74,7 +74,7 @@ public class SlurmMonitor extends GaswMonitor {
                     } else {
                         job.setStatus(status);
                     }
-                    System.err.println("job : " + sJob.getJobID() + " final : " + job.getStatus());
+                    System.err.println("job : " + sJob.getData().getJobID() + " final : " + job.getStatus());
                     
                     jobDAO.update(job);
                     new SlurmOutputParser(sJob).start();

@@ -16,7 +16,7 @@ public class SlurmOutputParser extends GaswOutputParser{
     final private SlurmJob  job;
 
     public SlurmOutputParser(SlurmJob job) {
-        super(job.getJobID());
+        super(job.getData().getJobID());
         this.job = job;
     }
 
@@ -53,7 +53,7 @@ public class SlurmOutputParser extends GaswOutputParser{
                 break;
         }
 
-        return new GaswOutput(job.getJobID(), gaswExitCode, "", uploadedResults,
+        return new GaswOutput(job.getData().getJobID(), gaswExitCode, "", uploadedResults,
                 appStdOut, appStdErr, stdOut, stdErr);
     }
 

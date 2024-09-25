@@ -1,11 +1,7 @@
 package fr.insalyon.creatis.gasw.executor.slurm.internals;
 
-import java.util.List;
-
-import fr.insalyon.creatis.gasw.Gasw;
 import fr.insalyon.creatis.gasw.GaswException;
 import fr.insalyon.creatis.gasw.execution.GaswStatus;
-import fr.insalyon.creatis.gasw.executor.slurm.config.json.properties.Config;
 import fr.insalyon.creatis.gasw.executor.slurm.internals.commands.RemoteCommand;
 import fr.insalyon.creatis.gasw.executor.slurm.internals.commands.items.Cat;
 import fr.insalyon.creatis.gasw.executor.slurm.internals.commands.items.Sbatch;
@@ -18,40 +14,29 @@ import lombok.RequiredArgsConstructor;
 import lombok.Setter;
 import lombok.extern.log4j.Log4j;
 
-@RequiredArgsConstructor @Log4j
+@Log4j @RequiredArgsConstructor @Setter
 public class SlurmJob {
-    
+
     @Getter
-    final private String           jobID;
-    final private String           command;
-    final private Config           config;
-    final private String           workingDir;
-    final private List<RemoteFile> filesUpload;
-    final private List<RemoteFile> filesDownload;
+    final private SlurmJobData  data;
 
-    @Setter @Getter
-    private String                 slurmJobID = null;
-
-    @Setter
-    private GaswStatus      status = GaswStatus.NOT_SUBMITTED;
-
-    @Setter @Getter
-    private boolean         terminated = false;
+    @Getter
+    private boolean             terminated = false;
+    private GaswStatus          status = GaswStatus.NOT_SUBMITTED;
 
     private void createBatchFile() throws GaswException {
         StringBuilder builder = new StringBuilder();
         RemoteOutput output;
 
         builder.append("#!/bin/sh\n");
-        builder.append("#SBATCH --job-name=" + jobID + "\n");
-        builder.append("#SBATCH --output=" + workingDir + "out/" + jobID + ".out\n");
-        builder.append("#SBATCH --error=" + workingDir + "err/" + jobID + ".err\n");
-        builder.append("cd " + workingDir + "\n");
-        builder.append("echo $PWD\n");
-        builder.append(command + "\n");
-        builder.append("echo $? > " + jobID + ".exit\n");
+        builder.append("#SBATCH --job-name=" + data.getJobID() + "\n");
+        builder.append("#SBATCH --output=" + data.getStdoutPath() + "\n");
+        builder.append("#SBATCH --error=" + data.getStderrPath() + "\n");
+        builder.append("cd " + data.getWorkingDir() + "\n");
+        builder.append(data.getCommand() + "\n");
+        builder.append("echo $? > " + data.getExitCodePath() + "\n");
 
-        output = RemoteTerminal.oneCommand(config, "echo -en '" + builder.toString() + "' > " + workingDir + jobID + ".batch");
+        output = RemoteTerminal.oneCommand(data.getConfig(), "echo -en '" + builder.toString() + "' > " + data.getWorkingDir() + data.getJobID() + ".batch");
 
         if ( output == null || output.getExitCode() != 0 || ! output.getStderr().getContent().isEmpty()) {
             System.out.println(output.getStderr().getContent());
@@ -64,10 +49,10 @@ public class SlurmJob {
      * @throws GaswException
      */
     public void prepare() throws GaswException {
-        RemoteTerminal rt = new RemoteTerminal(config);
+        RemoteTerminal rt = new RemoteTerminal(data.getConfig());
 
         rt.connect();
-        for (RemoteFile file : filesUpload) {
+        for (RemoteFile file : data.getFilesUpload()) {
             rt.upload(file.getSource(), file.getDest());
         }
         rt.disconnect();
@@ -78,10 +63,10 @@ public class SlurmJob {
      * @throws GaswException
      */
     public void download() throws GaswException {
-        RemoteTerminal rt = new RemoteTerminal(config);
+        RemoteTerminal rt = new RemoteTerminal(data.getConfig());
 
         rt.connect();
-        for (RemoteFile file : filesDownload) {
+        for (RemoteFile file : data.getFilesDownload()) {
             System.err.println("je dois telecharger " + file.getSource());
             rt.download(file.getSource(), file.getDest());
         }
@@ -92,14 +77,14 @@ public class SlurmJob {
 
 
     public void submit() throws GaswException {
-        RemoteCommand command = new Sbatch(workingDir + jobID + ".batch");
+        RemoteCommand command = new Sbatch(data.getWorkingDir() + data.getJobID() + ".batch");
 
         try {
-            command.execute(config);
+            command.execute(data.getConfig());
 
             if (command.failed())
                 throw new GaswException("Command failed !");
-            slurmJobID = command.result();
+            data.setSlurmJobID(command.result());
             System.err.println("VOICI LE BTACH JOB " + command.result() + " | " + command.getOutput().getStdout().getContent());
             
         } catch (GaswException e) {
@@ -118,11 +103,11 @@ public class SlurmJob {
     }
 
     private GaswStatus getStatusRequest() {
-        RemoteCommand command = new Scontrol(slurmJobID);
+        RemoteCommand command = new Scontrol(data.getSlurmJobID());
         String result = null;
 
         try {
-            command.execute(config);
+            command.execute(data.getConfig());
 
             System.out.println("ici bb " + command.getOutput().getStderr().getContent());
             if (command.failed())
@@ -158,10 +143,10 @@ public class SlurmJob {
     }
 
     public int getExitCode() {
-        RemoteCommand command = new Cat(workingDir + jobID + ".exit");
+        RemoteCommand command = new Cat(data.getWorkingDir() + data .getExitCodePath());
         
         try {
-            command.execute(config);
+            command.execute(data.getConfig());
 
             if (command.failed()) {
                 System.err.println("FAILED TO CAT THE FILE");
@@ -180,12 +165,12 @@ public class SlurmJob {
 
         if (status == GaswStatus.NOT_SUBMITTED || status == GaswStatus.UNDEFINED || status == GaswStatus.STALLED)
             return status;
-        for (int i = 0; i < config.getOptions().getStatusRetry(); i++) {
+        for (int i = 0; i < data.getConfig().getOptions().getStatusRetry(); i++) {
             rawStatus = getStatusRequest();
 
             if (rawStatus != GaswStatus.UNDEFINED)
                 return rawStatus;
-            Utils.sleepNException(config.getOptions().getStatusRetryWait());
+            Utils.sleepNException(data.getConfig().getOptions().getStatusRetryWait());
         }
         return GaswStatus.STALLED;
     }

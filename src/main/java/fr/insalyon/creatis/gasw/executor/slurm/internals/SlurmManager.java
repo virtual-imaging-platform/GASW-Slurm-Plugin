@@ -80,13 +80,13 @@ public class SlurmManager {
         RemoteCommand remoteCommand = new Rm(config.getCredentials().getWorkingDir() + workflowId, "-rf");
 
         end = true;
-        try {
-            if (remoteCommand.execute(config).failed())
-                throw new GaswException("");
+        // try {
+        //     if (remoteCommand.execute(config).failed())
+        //         throw new GaswException("");
             
-        } catch (GaswException e) {
-            log.error("Failed to desroy the slurm manager !");
-        }
+        // } catch (GaswException e) {
+        //     log.error("Failed to desroy the slurm manager !");
+        // }
     }
 
     private void submitter(SlurmJob exec) {
@@ -100,26 +100,33 @@ public class SlurmManager {
     }
 
     public void submitter(String jobID, String command) {
+        SlurmJobData jobData = new SlurmJobData(jobID, config);
         String workingDirectoryJob = config.getCredentials().getWorkingDir() + workflowId + "/";
         List<RemoteFile> filesUpload = new ArrayList<>();
         List<RemoteFile> filesDownload = new ArrayList<>();
+
+        System.err.println("voici le working dir " + workingDirectoryJob);
+        jobData.setWorkingDir(workingDirectoryJob);
+        jobData.setCommand(command);
 
         filesUpload.add(new RemoteFile("./inv/" + jobID + "-invocation.json", workingDirectoryJob));
         filesUpload.add(new RemoteFile("./config/" + jobID + "-configuration.sh", workingDirectoryJob));
         filesUpload.add(new RemoteFile("./sh/" + jobID + ".sh", workingDirectoryJob + "/sh"));
 
-        filesDownload.add(new RemoteFile(workingDirectoryJob + "err/" + jobID + ".err", "./err/" + jobID + ".sh.err"));
-        filesDownload.add(new RemoteFile(workingDirectoryJob + "out/" + jobID + ".out", "./out/" + jobID + ".sh.out"));
-        filesDownload.add(new RemoteFile(workingDirectoryJob + jobID + ".sh.provenance.json", "./" + jobID + ".sh.provenance.json"));
+        filesDownload.add(new RemoteFile(jobData.getStderrPath(), "./err/" + jobID + ".sh.err"));
+        filesDownload.add(new RemoteFile(jobData.getStdoutPath(), "./out/" + jobID + ".sh.out"));
+        filesDownload.add(new RemoteFile(jobID + ".sh.provenance.json", "./" + jobID + ".sh.provenance.json"));
 
-        SlurmJob job = new SlurmJob(jobID, command, config, workingDirectoryJob, filesUpload, filesDownload);
+        jobData.setFilesDownload(filesDownload);
+        jobData.setFilesUpload(filesUpload);
+
+        SlurmJob job = new SlurmJob(jobData);
         submitter(job);
-        System.err.println("J'ai fait le submitter");
     }
 
     public SlurmJob getJob(String jobID) {
         return jobs.stream()
-                .filter(job -> job.getJobID().equals(jobID))
+                .filter(job -> job.getData().getJobID().equals(jobID))
                 .findFirst()
                 .orElse(null);
     }

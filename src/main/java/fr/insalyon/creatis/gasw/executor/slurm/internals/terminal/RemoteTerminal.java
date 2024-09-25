@@ -2,7 +2,6 @@ package fr.insalyon.creatis.gasw.executor.slurm.internals.terminal;
 
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
-import java.nio.file.Files;
 import java.nio.file.Paths;
 import java.util.EnumSet;
 import java.util.concurrent.TimeUnit;
@@ -17,7 +16,6 @@ import org.apache.sshd.scp.client.ScpClientCreator;
 import fr.insalyon.creatis.gasw.GaswException;
 import fr.insalyon.creatis.gasw.executor.slurm.config.json.properties.Config;
 import fr.insalyon.creatis.gasw.executor.slurm.config.json.properties.Credentials;
-import lombok.RequiredArgsConstructor;
 import lombok.extern.log4j.Log4j;
 
 /**
