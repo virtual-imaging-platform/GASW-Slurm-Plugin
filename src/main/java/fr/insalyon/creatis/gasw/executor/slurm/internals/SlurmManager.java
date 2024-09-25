@@ -107,10 +107,9 @@ public class SlurmManager {
         filesUpload.add(new RemoteFile("./config/" + jobID + "-configuration.sh", workingDirectoryJob));
         filesUpload.add(new RemoteFile("./sh/" + jobID + ".sh", workingDirectoryJob + "/sh"));
 
-        filesDownload.add(new RemoteFile(workingDirectoryJob + jobID + "/err/sh.err", "./err/" + jobID + ".sh.err"));
-        filesDownload.add(new RemoteFile(workingDirectoryJob + jobID + "/err/sh.app.err", "./err/" + jobID + ".sh.app.err"));
-        filesDownload.add(new RemoteFile(workingDirectoryJob + jobID + "/out/sh.out", "./out/" + jobID + ".sh.out"));
-        filesDownload.add(new RemoteFile(workingDirectoryJob + jobID + "/out/sh.app.out", "./out/"+ jobID + ".sh.app.out"));
+        filesDownload.add(new RemoteFile(workingDirectoryJob + "err/" + jobID + ".err", "./err/" + jobID + ".sh.err"));
+        filesDownload.add(new RemoteFile(workingDirectoryJob + "out/" + jobID + ".out", "./out/" + jobID + ".sh.out"));
+        filesDownload.add(new RemoteFile(workingDirectoryJob + jobID + ".sh.provenance.json", "./" + jobID + ".sh.provenance.json"));
 
         SlurmJob job = new SlurmJob(jobID, command, config, workingDirectoryJob, filesUpload, filesDownload);
         submitter(job);
@@ -124,7 +123,7 @@ public class SlurmManager {
                 .orElse(null);
     }
 
-    public List<SlurmJob> getUnfinishedJob() {
+    public List<SlurmJob> getUnfinishedJobs() {
         return jobs.stream()
                .filter(job -> !job.isTerminated())
                .collect(Collectors.toCollection(ArrayList::new));
@@ -158,7 +157,7 @@ public class SlurmManager {
             }
             while (end == false) {
                 synchronized (this) {
-                    for (SlurmJob exec : jobs) {
+                    for (SlurmJob exec : getUnfinishedJobs()) {
                         if (exec.getStatus() == GaswStatus.NOT_SUBMITTED) {
                             exec.setStatus(GaswStatus.QUEUED);
                             exec.start();

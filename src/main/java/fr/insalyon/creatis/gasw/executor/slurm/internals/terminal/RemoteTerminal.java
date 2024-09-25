@@ -79,15 +79,8 @@ public class RemoteTerminal {
         ScpClient scpClient = creator.createScpClient(session);
 
         try {
-            System.err.println("elles vont : " + localLocation);
             scpClient.download(remoteFile, Paths.get(localLocation));
 
-            log.info("le dossier courant " + System.getProperty("user.dir") + " blab blaexist!");
-
-            if (Files.exists(Paths.get(localLocation))) {
-                log.info("le fichier " + localLocation + " exist!");
-
-            }
         } catch (IOException e) {
             log.error(e);
             throw new GaswException("Failed to download file on remote !");

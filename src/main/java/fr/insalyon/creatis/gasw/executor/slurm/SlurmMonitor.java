@@ -42,7 +42,7 @@ public class SlurmMonitor extends GaswMonitor {
     }
 
     private void statusChecker() {
-        List<SlurmJob> jobs = manager.getUnfinishedJob();
+        List<SlurmJob> jobs = manager.getUnfinishedJobs();
 
         for (SlurmJob j : jobs) {
             GaswStatus stus = j.getStatus();
