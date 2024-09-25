@@ -15,16 +15,27 @@ import org.apache.sshd.scp.client.ScpClient;
 import org.apache.sshd.scp.client.ScpClientCreator;
 
 import fr.insalyon.creatis.gasw.GaswException;
+import fr.insalyon.creatis.gasw.executor.slurm.config.json.properties.Config;
 import fr.insalyon.creatis.gasw.executor.slurm.config.json.properties.Credentials;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.log4j.Log4j;
 
-@RequiredArgsConstructor @Log4j
+/**
+ * @see -RFC 4253
+ */
+@Log4j
 public class RemoteTerminal {
 
-    final private Credentials           config;
+    final private Config                config;
+    final private Credentials           cred;
+
     private SshClient                   client;
     private ClientSession               session;
+
+    public RemoteTerminal(Config config) {
+        this.config = config;
+        this.cred = config.getCredentials();
+    }
 
     private void init() {
         client = SshClient.setUpDefaultClient();
@@ -35,12 +46,12 @@ public class RemoteTerminal {
         init();
 
         try {
-            session = client.connect(config.getUsername(), config.getHost(), config.getPort())
-                .verify(10, TimeUnit.SECONDS)
+            session = client.connect(cred.getUsername(), cred.getHost(), cred.getPort())
+                .verify(config.getOptions().getSshEventTimeout(), TimeUnit.SECONDS)
                 .getClientSession();
 
-            session.addPasswordIdentity(config.getPassword());
-            session.auth().verify(10, TimeUnit.SECONDS);
+            session.addPasswordIdentity(cred.getPassword());
+            session.auth().verify(config.getOptions().getSshEventTimeout(), TimeUnit.SECONDS);
             
         } catch (IOException e) {
             log.error(e);
@@ -48,9 +59,6 @@ public class RemoteTerminal {
         }
     }
     
-    /**
-     * @see RFC 4253
-     */
     public void disconnect() throws GaswException {
         try {
             session.disconnect(11, "Session ended");
@@ -97,8 +105,8 @@ public class RemoteTerminal {
                 channel.setOut(stdout);
                 channel.setErr(stderr);
 
-                channel.open().verify(10, TimeUnit.SECONDS);
-                channel.waitFor(EnumSet.of(ClientChannelEvent.CLOSED), 1000);
+                channel.open().verify(config.getOptions().getCommandExecutionTimeout(), TimeUnit.SECONDS);
+                channel.waitFor(EnumSet.of(ClientChannelEvent.CLOSED), config.getOptions().getSshEventTimeout());
 
                 return (new RemoteOutput(stdout.toString(), stderr.toString(), channel.getExitStatus()));
         } catch (IOException e) {
@@ -106,7 +114,7 @@ public class RemoteTerminal {
         }
     }
 
-    public static RemoteOutput oneCommand(Credentials config, String command) {
+    public static RemoteOutput oneCommand(Config config, String command) {
         RemoteTerminal term = new RemoteTerminal(config);
         RemoteOutput result = null;
 

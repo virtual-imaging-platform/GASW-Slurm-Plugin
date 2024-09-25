@@ -46,14 +46,12 @@ public class SlurmJob {
         builder.append("#SBATCH --job-name=" + jobID + "\n");
         builder.append("#SBATCH --output=" + workingDir + "out/" + jobID + ".out\n");
         builder.append("#SBATCH --error=" + workingDir + "err/" + jobID + ".err\n");
-        // builder.append("module load bosh\n");
-        // builder.append("module load python\n");
         builder.append("cd " + workingDir + "\n");
         builder.append("echo $PWD\n");
         builder.append(command + "\n");
         builder.append("echo $? > " + jobID + ".exit\n");
 
-        output = RemoteTerminal.oneCommand(config.getCredentials(), "echo -en '" + builder.toString() + "' > " + workingDir + jobID + ".batch");
+        output = RemoteTerminal.oneCommand(config, "echo -en '" + builder.toString() + "' > " + workingDir + jobID + ".batch");
 
         if ( output == null || output.getExitCode() != 0 || ! output.getStderr().getContent().isEmpty()) {
             System.out.println(output.getStderr().getContent());
@@ -66,7 +64,7 @@ public class SlurmJob {
      * @throws GaswException
      */
     public void prepare() throws GaswException {
-        RemoteTerminal rt = new RemoteTerminal(config.getCredentials());
+        RemoteTerminal rt = new RemoteTerminal(config);
 
         rt.connect();
         for (RemoteFile file : filesUpload) {
@@ -80,7 +78,7 @@ public class SlurmJob {
      * @throws GaswException
      */
     public void download() throws GaswException {
-        RemoteTerminal rt = new RemoteTerminal(config.getCredentials());
+        RemoteTerminal rt = new RemoteTerminal(config);
 
         rt.connect();
         for (RemoteFile file : filesDownload) {
@@ -97,7 +95,7 @@ public class SlurmJob {
         RemoteCommand command = new Sbatch(workingDir + jobID + ".batch");
 
         try {
-            command.execute(config.getCredentials());
+            command.execute(config);
 
             if (command.failed())
                 throw new GaswException("Command failed !");
@@ -124,7 +122,7 @@ public class SlurmJob {
         String result = null;
 
         try {
-            command.execute(config.getCredentials());
+            command.execute(config);
 
             System.out.println("ici bb " + command.getOutput().getStderr().getContent());
             if (command.failed())
@@ -163,7 +161,7 @@ public class SlurmJob {
         RemoteCommand command = new Cat(workingDir + jobID + ".exit");
         
         try {
-            command.execute(config.getCredentials());
+            command.execute(config);
 
             if (command.failed()) {
                 System.err.println("FAILED TO CAT THE FILE");

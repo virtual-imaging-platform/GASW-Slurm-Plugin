@@ -2,8 +2,6 @@ package fr.insalyon.creatis.gasw.executor.slurm;
 
 import java.io.File;
 
-import org.apache.sshd.common.config.SyslogFacilityValue;
-
 import fr.insalyon.creatis.gasw.GaswConstants;
 import fr.insalyon.creatis.gasw.GaswException;
 import fr.insalyon.creatis.gasw.GaswExitCode;
@@ -26,7 +24,6 @@ public class SlurmOutputParser extends GaswOutputParser{
     public GaswOutput getGaswOutput() throws GaswException {
         GaswExitCode gaswExitCode = GaswExitCode.EXECUTION_CANCELED;
         job.download();
-        System.out.println("j'ai bien tout download");
 
         int exitCode;
 

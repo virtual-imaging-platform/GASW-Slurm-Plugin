@@ -15,6 +15,7 @@ import fr.insalyon.creatis.gasw.execution.GaswStatus;
 import fr.insalyon.creatis.gasw.executor.slurm.config.json.properties.Config;
 import fr.insalyon.creatis.gasw.executor.slurm.internals.commands.RemoteCommand;
 import fr.insalyon.creatis.gasw.executor.slurm.internals.commands.items.Mkdir;
+import fr.insalyon.creatis.gasw.executor.slurm.internals.commands.items.Rm;
 import fr.insalyon.creatis.gasw.executor.slurm.internals.terminal.RemoteFile;
 import lombok.Getter;
 import lombok.extern.log4j.Log4j;
@@ -46,10 +47,10 @@ public class SlurmManager {
         RemoteCommand remoteDirSh = new Mkdir(getWorkingDir() + "/sh", "-p");
 
         try {
-            remoteCommand.execute(config.getCredentials());
-            remoteDirErr.execute(config.getCredentials());
-            remoteDirOut.execute(config.getCredentials());
-            remoteDirSh.execute(config.getCredentials());
+            remoteCommand.execute(config);
+            remoteDirErr.execute(config);
+            remoteDirOut.execute(config);
+            remoteDirSh.execute(config);
 
             if (remoteCommand.failed() || remoteDirErr.failed() || remoteDirOut.failed() || remoteDirSh.failed())
                 throw new GaswException("");
@@ -76,16 +77,16 @@ public class SlurmManager {
      * Clean files created inside the workflow folder
      */
     public void destroy() {
-        // RemoteCommand remoteCommand = new Rm(config.getCredentials().getWorkingDir() + workflowId, "-rf");
+        RemoteCommand remoteCommand = new Rm(config.getCredentials().getWorkingDir() + workflowId, "-rf");
 
         end = true;
-        // try {
-            // if (remoteCommand.execute(config.getCredentials()).failed())
-                // throw new GaswException("");
+        try {
+            if (remoteCommand.execute(config).failed())
+                throw new GaswException("");
             
-        // } catch (GaswException e) {
-            // log.error("Failed to desroy the slurm manager !");
-        // }
+        } catch (GaswException e) {
+            log.error("Failed to desroy the slurm manager !");
+        }
     }
 
     private void submitter(SlurmJob exec) {

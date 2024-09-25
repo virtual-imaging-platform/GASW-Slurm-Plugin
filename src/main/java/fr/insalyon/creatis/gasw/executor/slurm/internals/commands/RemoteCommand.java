@@ -1,7 +1,7 @@
 package fr.insalyon.creatis.gasw.executor.slurm.internals.commands;
 
 import fr.insalyon.creatis.gasw.GaswException;
-import fr.insalyon.creatis.gasw.executor.slurm.config.json.properties.Credentials;
+import fr.insalyon.creatis.gasw.executor.slurm.config.json.properties.Config;
 import fr.insalyon.creatis.gasw.executor.slurm.internals.terminal.RemoteOutput;
 import fr.insalyon.creatis.gasw.executor.slurm.internals.terminal.RemoteTerminal;
 import lombok.Getter;
@@ -15,7 +15,7 @@ public abstract class RemoteCommand {
     @Getter
     private RemoteOutput    output;
 
-    public RemoteCommand execute(Credentials config) throws GaswException {
+    public RemoteCommand execute(Config config) throws GaswException {
         System.err.println("command execute : " + command);
         output = RemoteTerminal.oneCommand(config, command);
         return this;

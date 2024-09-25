@@ -13,7 +13,7 @@ public class Options {
 
     /* value in seconds */
     @JsonProperty(value = "sshEventTimeout")
-    private int sshEventTimeout = 10;
+    private int sshEventTimeout = 1000;
 
     @JsonProperty(value = "statusRetry")
     private int statusRetry = 10;

@@ -141,7 +141,7 @@ public class SlurmMonitor extends GaswMonitor {
                 System.err.println("je viens de mettre à jour le job " + job.getId() + " sur le statut " + status.toString());
             }
         } catch (DAOException e) {
-            System.err.println("ICI j'ai une dao exeception! " + e.getMessage());
+            log.error(e);
         }
     }
 
@@ -161,5 +161,4 @@ public class SlurmMonitor extends GaswMonitor {
 
     @Override
     protected void resume(Job job) {}
-    
 }
