@@ -60,18 +60,22 @@ public class SlurmJob {
 
     /**
      * Download all the data created by the jobs (not the app output) but the logs.
-     * @throws GaswException
      */
-    public void download() throws GaswException {
+    public void download() {
         RemoteTerminal rt = new RemoteTerminal(data.getConfig());
 
-        rt.connect();
-        for (RemoteFile file : data.getFilesDownload()) {
-            System.err.println("je dois telecharger " + file.getSource());
-            rt.download(file.getSource(), file.getDest());
+        try {
+
+            rt.connect();
+            for (RemoteFile file : data.getFilesDownload()) {
+                System.err.println("je dois telecharger " + file.getSource());
+                rt.download(file.getSource(), file.getDest());
+            }
+            rt.disconnect();
+            System.err.println("j'ai telecharger les outputs");
+        } catch (GaswException e) {
+            log.error("Failed to download the files !", e);
         }
-        rt.disconnect();
-        System.err.println("j'ai telecharger les outputs");
     }
 
 

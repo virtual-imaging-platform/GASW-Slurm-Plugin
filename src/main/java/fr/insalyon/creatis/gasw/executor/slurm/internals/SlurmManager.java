@@ -120,7 +120,8 @@ public class SlurmManager {
 
         filesDownload.add(new RemoteFile(jobData.getStderrPath(), "./err/" + jobID + ".sh.err"));
         filesDownload.add(new RemoteFile(jobData.getStdoutPath(), "./out/" + jobID + ".sh.out"));
-        filesDownload.add(new RemoteFile(jobID + ".sh.provenance.json", "./" + jobID + ".sh.provenance.json"));
+        filesDownload.add(new RemoteFile(workingDirectoryJob + jobID + ".sh.provenance.json", "./" + jobID + ".sh.provenance.json"));
+        filesDownload.add(new RemoteFile(workingDirectoryJob + jobID + ".batch", "./" + jobID + ".batch"));
 
         jobData.setFilesDownload(filesDownload);
         jobData.setFilesUpload(filesUpload);

@@ -86,7 +86,6 @@ public class RemoteTerminal {
 
         try {
             scpClient.download(remoteFile, Paths.get(localLocation));
-
         } catch (IOException e) {
             log.error(e);
             throw new GaswException("Failed to download file on remote !");

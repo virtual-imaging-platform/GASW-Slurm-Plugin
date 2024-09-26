@@ -22,11 +22,14 @@ public abstract class RemoteCommand {
     }
 
     public boolean failed() {
-        if (output.getExitCode() != 0)
-            return true;
-        if ( ! output.getStderr().getContent().isEmpty())
-            return true;
-        return false;
+        if (output != null) {
+            if (output.getExitCode() != 0)
+                return true;
+            if ( ! output.getStderr().getContent().isEmpty())
+                return true;
+            return false;
+        }
+        return true;
     }
 
     public abstract String result();

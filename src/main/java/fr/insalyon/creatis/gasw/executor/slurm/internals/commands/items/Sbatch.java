@@ -10,6 +10,7 @@ public class Sbatch extends RemoteCommand {
 
     public String result() {
         String[] line = getOutput().getStdout().getRow(0);
+
         return line[line.length - 1];
     }
 }
