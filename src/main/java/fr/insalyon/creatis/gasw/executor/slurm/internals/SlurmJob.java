@@ -3,9 +3,9 @@ package fr.insalyon.creatis.gasw.executor.slurm.internals;
 import fr.insalyon.creatis.gasw.GaswException;
 import fr.insalyon.creatis.gasw.execution.GaswStatus;
 import fr.insalyon.creatis.gasw.executor.slurm.internals.commands.RemoteCommand;
+import fr.insalyon.creatis.gasw.executor.slurm.internals.commands.alternatives.RetrieveStatus;
+import fr.insalyon.creatis.gasw.executor.slurm.internals.commands.alternatives.SubmitJob;
 import fr.insalyon.creatis.gasw.executor.slurm.internals.commands.items.Cat;
-import fr.insalyon.creatis.gasw.executor.slurm.internals.commands.items.Sbatch;
-import fr.insalyon.creatis.gasw.executor.slurm.internals.commands.items.Scontrol;
 import fr.insalyon.creatis.gasw.executor.slurm.internals.terminal.RemoteFile;
 import fr.insalyon.creatis.gasw.executor.slurm.internals.terminal.RemoteOutput;
 import fr.insalyon.creatis.gasw.executor.slurm.internals.terminal.RemoteTerminal;
@@ -81,7 +81,8 @@ public class SlurmJob {
 
 
     public void submit() throws GaswException {
-        RemoteCommand command = new Sbatch(data.getWorkingDir() + data.getJobID() + ".batch");
+        boolean isPBS = data.getConfig().getOptions().isUsePBS();
+        RemoteCommand command = new SubmitJob(data.getWorkingDir() + data.getJobID() + ".batch", isPBS).getCommand();
 
         try {
             command.execute(data.getConfig());
@@ -107,7 +108,8 @@ public class SlurmJob {
     }
 
     private GaswStatus getStatusRequest() {
-        RemoteCommand command = new Scontrol(data.getSlurmJobID());
+        boolean isPBS = data.getConfig().getOptions().isUsePBS();
+        RemoteCommand command = new RetrieveStatus(data.getSlurmJobID(), isPBS).getCommand();
         String result = null;
 
         try {

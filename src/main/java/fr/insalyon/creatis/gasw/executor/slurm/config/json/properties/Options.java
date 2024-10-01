@@ -21,4 +21,8 @@ public class Options {
     /* value in seconds */
     @JsonProperty(value = "statusRetryWait")
     private int statusRetryWait = 10;
+
+    /* By default the system use slurn */
+    @JsonProperty(value = "usePBS")
+    private boolean usePBS = false;
 }
