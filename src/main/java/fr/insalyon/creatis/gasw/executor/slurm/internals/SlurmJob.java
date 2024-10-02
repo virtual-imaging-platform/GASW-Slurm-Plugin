@@ -3,9 +3,10 @@ package fr.insalyon.creatis.gasw.executor.slurm.internals;
 import fr.insalyon.creatis.gasw.GaswException;
 import fr.insalyon.creatis.gasw.execution.GaswStatus;
 import fr.insalyon.creatis.gasw.executor.slurm.internals.commands.RemoteCommand;
-import fr.insalyon.creatis.gasw.executor.slurm.internals.commands.alternatives.RetrieveStatus;
-import fr.insalyon.creatis.gasw.executor.slurm.internals.commands.alternatives.SubmitJob;
+import fr.insalyon.creatis.gasw.executor.slurm.internals.commands.RemoteCommandAlternative;
 import fr.insalyon.creatis.gasw.executor.slurm.internals.commands.items.Cat;
+import fr.insalyon.creatis.gasw.executor.slurm.internals.commands.items.Sbatch;
+import fr.insalyon.creatis.gasw.executor.slurm.internals.commands.items.Scontrol;
 import fr.insalyon.creatis.gasw.executor.slurm.internals.terminal.RemoteFile;
 import fr.insalyon.creatis.gasw.executor.slurm.internals.terminal.RemoteOutput;
 import fr.insalyon.creatis.gasw.executor.slurm.internals.terminal.RemoteTerminal;
@@ -82,7 +83,10 @@ public class SlurmJob {
 
     public void submit() throws GaswException {
         boolean isPBS = data.getConfig().getOptions().isUsePBS();
-        RemoteCommand command = new SubmitJob(data.getWorkingDir() + data.getJobID() + ".batch", isPBS).getCommand();
+        RemoteCommandAlternative<Sbatch, Sbatch> alternative = new RemoteCommandAlternative<>(isPBS, 
+            Sbatch.class, Sbatch.class,
+            data.getWorkingDir() + data.getJobID() + ".batch");
+        RemoteCommand command = alternative.getCommand();
 
         try {
             command.execute(data.getConfig());
@@ -109,7 +113,8 @@ public class SlurmJob {
 
     private GaswStatus getStatusRequest() {
         boolean isPBS = data.getConfig().getOptions().isUsePBS();
-        RemoteCommand command = new RetrieveStatus(data.getSlurmJobID(), isPBS).getCommand();
+        RemoteCommandAlternative<Scontrol, Scontrol> alternative = new RemoteCommandAlternative<>(isPBS, Scontrol.class, Scontrol.class, data.getSlurmJobID());
+        RemoteCommand command = alternative.getCommand();
         String result = null;
 
         try {
