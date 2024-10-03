@@ -5,8 +5,10 @@ import fr.insalyon.creatis.gasw.execution.GaswStatus;
 import fr.insalyon.creatis.gasw.executor.slurm.internals.commands.RemoteCommand;
 import fr.insalyon.creatis.gasw.executor.slurm.internals.commands.RemoteCommandAlternative;
 import fr.insalyon.creatis.gasw.executor.slurm.internals.commands.items.Cat;
+import fr.insalyon.creatis.gasw.executor.slurm.internals.commands.items.Qsub;
 import fr.insalyon.creatis.gasw.executor.slurm.internals.commands.items.Sbatch;
 import fr.insalyon.creatis.gasw.executor.slurm.internals.commands.items.Scontrol;
+import fr.insalyon.creatis.gasw.executor.slurm.internals.commands.items.Tracejob;
 import fr.insalyon.creatis.gasw.executor.slurm.internals.terminal.RemoteFile;
 import fr.insalyon.creatis.gasw.executor.slurm.internals.terminal.RemoteOutput;
 import fr.insalyon.creatis.gasw.executor.slurm.internals.terminal.RemoteTerminal;
@@ -26,18 +28,10 @@ public class SlurmJob {
     private GaswStatus          status = GaswStatus.NOT_SUBMITTED;
 
     private void createBatchFile() throws GaswException {
-        StringBuilder builder = new StringBuilder();
+        BatchFile batchFile = new BatchFile(data);
         RemoteOutput output;
 
-        builder.append("#!/bin/sh\n");
-        builder.append("#SBATCH --job-name=" + data.getJobID() + "\n");
-        builder.append("#SBATCH --output=" + data.getStdoutPath() + "\n");
-        builder.append("#SBATCH --error=" + data.getStderrPath() + "\n");
-        builder.append("cd " + data.getWorkingDir() + "\n");
-        builder.append(data.getCommand() + "\n");
-        builder.append("echo $? > " + data.getExitCodePath() + "\n");
-
-        output = RemoteTerminal.oneCommand(data.getConfig(), "echo -en '" + builder.toString() + "' > " + data.getWorkingDir() + data.getJobID() + ".batch");
+        output = RemoteTerminal.oneCommand(data.getConfig(), "echo -en '" + batchFile.build().toString() + "' > " + data.getWorkingDir() + data.getJobID() + ".batch");
 
         if ( output == null || output.getExitCode() != 0 || ! output.getStderr().getContent().isEmpty()) {
             System.out.println(output.getStderr().getContent());
@@ -83,8 +77,8 @@ public class SlurmJob {
 
     public void submit() throws GaswException {
         boolean isPBS = data.getConfig().getOptions().isUsePBS();
-        RemoteCommandAlternative<Sbatch, Sbatch> alternative = new RemoteCommandAlternative<>(isPBS, 
-            Sbatch.class, Sbatch.class,
+        RemoteCommandAlternative<Qsub, Sbatch> alternative = new RemoteCommandAlternative<>(isPBS, 
+            Qsub.class, Sbatch.class,
             data.getWorkingDir() + data.getJobID() + ".batch");
         RemoteCommand command = alternative.getCommand();
 
@@ -113,20 +107,26 @@ public class SlurmJob {
 
     private GaswStatus getStatusRequest() {
         boolean isPBS = data.getConfig().getOptions().isUsePBS();
-        RemoteCommandAlternative<Scontrol, Scontrol> alternative = new RemoteCommandAlternative<>(isPBS, Scontrol.class, Scontrol.class, data.getSlurmJobID());
+        RemoteCommandAlternative<Tracejob, Scontrol> alternative = new RemoteCommandAlternative<>(isPBS, 
+            Tracejob.class, Scontrol.class, 
+            data.getSlurmJobID());
         RemoteCommand command = alternative.getCommand();
         String result = null;
 
         try {
             command.execute(data.getConfig());
 
-            if (command.failed())
+            if (command.failed()) {
+                System.err.println("la commande status a fail");
                 return GaswStatus.UNDEFINED;
+            }
             result = command.result();
             if (result == null)
                 return GaswStatus.UNDEFINED;
 
             switch (result) {
+                case "COMPLETE":
+                    return GaswStatus.COMPLETED;
                 case "COMPLETED":
                     return GaswStatus.COMPLETED;
                 case "PENDING":

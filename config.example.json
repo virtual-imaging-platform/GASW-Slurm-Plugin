@@ -3,7 +3,7 @@
         "host": "192.168.122.152",
         "port": 22,
         "username": "almalinux",
-        "password": "ethaniel",
+        "privateKeyPath": "mykey",
         "workingDir": "slurm-working-dir/"
     },
 	"options": {

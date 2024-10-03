@@ -3,6 +3,10 @@ package fr.insalyon.creatis.gasw.executor.slurm.internals.terminal;
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.nio.file.Paths;
+import java.security.GeneralSecurityException;
+import java.security.Key;
+import java.security.KeyPair;
+import java.util.Collection;
 import java.util.EnumSet;
 import java.util.concurrent.TimeUnit;
 
@@ -10,6 +14,11 @@ import org.apache.sshd.client.SshClient;
 import org.apache.sshd.client.channel.ChannelExec;
 import org.apache.sshd.client.channel.ClientChannelEvent;
 import org.apache.sshd.client.session.ClientSession;
+import org.apache.sshd.common.config.keys.FilePasswordProvider;
+import org.apache.sshd.common.config.keys.loader.KeyPairResourceLoader;
+import org.apache.sshd.common.keyprovider.KeyIdentityProvider;
+import org.apache.sshd.common.session.SessionContext;
+import org.apache.sshd.common.util.security.SecurityUtils;
 import org.apache.sshd.scp.client.ScpClient;
 import org.apache.sshd.scp.client.ScpClientCreator;
 
@@ -35,22 +44,35 @@ public class RemoteTerminal {
         this.cred = config.getCredentials();
     }
 
-    private void init() {
-        client = SshClient.setUpDefaultClient();
-        client.start();
+    private void init() throws GaswException {
+        try {
+            KeyPairResourceLoader loader = SecurityUtils.getKeyPairResourceParser();
+            Collection<KeyPair> keys = loader.loadKeyPairs(null, Paths.get(cred.getPrivateKeyPath()), null);
+
+            client = SshClient.setUpDefaultClient();
+            client.setKeyIdentityProvider(KeyIdentityProvider.wrapKeyPairs(keys));
+            client.start();
+
+        } catch (GeneralSecurityException e) {
+            log.error(e);
+            throw new GaswException("Failed to init");
+        } catch (IOException e) {
+            log.error(e);
+            throw new GaswException("Failed to init");
+        }
     }
 
     public void connect() throws GaswException {
         init();
 
         try {
+
             session = client.connect(cred.getUsername(), cred.getHost(), cred.getPort())
                 .verify(config.getOptions().getSshEventTimeout(), TimeUnit.SECONDS)
                 .getClientSession();
 
-            session.addPasswordIdentity(cred.getPassword());
             session.auth().verify(config.getOptions().getSshEventTimeout(), TimeUnit.SECONDS);
-            
+
         } catch (IOException e) {
             log.error(e);
             throw new GaswException("Failed to connect to ssh");

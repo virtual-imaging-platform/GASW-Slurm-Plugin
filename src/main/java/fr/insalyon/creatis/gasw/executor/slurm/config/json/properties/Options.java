@@ -7,18 +7,18 @@ import lombok.Getter;
 @Getter
 public class Options {
     
-    /* value in seconds */
+    /* value in millis */
     @JsonProperty(value = "commandExecutionTimeout")
     private int commandExecutionTimeout = 10;
 
-    /* value in seconds */
+    /* value in millis */
     @JsonProperty(value = "sshEventTimeout")
     private int sshEventTimeout = 1000;
 
     @JsonProperty(value = "statusRetry")
     private int statusRetry = 10;
 
-    /* value in seconds */
+    /* value in millis */
     @JsonProperty(value = "statusRetryWait")
     private int statusRetryWait = 10;
 

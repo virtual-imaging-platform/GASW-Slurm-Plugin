@@ -17,8 +17,8 @@ public class Credentials {
     @JsonProperty(value = "username", required = true)
     private String  username;
 
-    @JsonProperty(value = "password", required = true)
-    private String  password;
+    @JsonProperty(value = "privateKeyPath", required = true)
+    private String  privateKeyPath;
 
     @JsonProperty(value = "workingDir", required = true)
     private String  workingDir; /* should contain the / at the end */

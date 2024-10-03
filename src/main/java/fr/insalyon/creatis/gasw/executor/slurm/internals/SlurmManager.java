@@ -85,13 +85,13 @@ public class SlurmManager {
         RemoteCommand remoteCommand = new Rm(config.getCredentials().getWorkingDir() + workflowId, "-rf");
 
         end = true;
-        try {
-            if (remoteCommand.execute(config).failed())
-                throw new GaswException("");
+        // try {
+            // if (remoteCommand.execute(config).failed())
+                // throw new GaswException("");
             
-        } catch (GaswException e) {
-            log.error("Failed to desroy the slurm manager !");
-        }
+        // } catch (GaswException e) {
+            // log.error("Failed to desroy the slurm manager !");
+        // }
     }
 
     private void submitter(SlurmJob exec) {
