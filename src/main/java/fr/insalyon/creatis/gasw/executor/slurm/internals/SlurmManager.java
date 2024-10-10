@@ -117,6 +117,7 @@ public class SlurmManager {
         filesUpload.add(new RemoteFile("./inv/" + jobID + "-invocation.json", workingDirectoryJob));
         filesUpload.add(new RemoteFile("./config/" + jobID + "-configuration.sh", workingDirectoryJob));
         filesUpload.add(new RemoteFile("./sh/" + jobID + ".sh", workingDirectoryJob + "/sh"));
+        filesUpload.add(new RemoteFile("./workflow.json", workingDirectoryJob));
 
         filesDownload.add(new RemoteFile(jobData.getStderrPath(), "./err/" + jobID + ".sh.err"));
         filesDownload.add(new RemoteFile(jobData.getStdoutPath(), "./out/" + jobID + ".sh.out"));
