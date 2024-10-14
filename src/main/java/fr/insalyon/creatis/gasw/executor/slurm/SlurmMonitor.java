@@ -121,7 +121,7 @@ public class SlurmMonitor extends GaswMonitor {
 
     public synchronized void finish() {
         if (instance != null) {
-            System.err.println("Monitor is off !");
+            log.trace("Monitor is off !");
             instance.stop = true;
             instance = null;
         }
@@ -134,7 +134,6 @@ public class SlurmMonitor extends GaswMonitor {
             if (job.getStatus() != status) {
                 job.setStatus(status);
                 jobDAO.update(job);
-                System.err.println("je viens de mettre à jour le job " + job.getId() + " sur le statut " + status.toString());
             }
         } catch (DAOException e) {
             log.error(e);
