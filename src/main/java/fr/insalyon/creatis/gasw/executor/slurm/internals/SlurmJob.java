@@ -76,7 +76,7 @@ public class SlurmJob {
 
 
     public void submit() throws GaswException {
-        boolean isPBS = data.getConfig().getOptions().isUsePBS();
+        final boolean isPBS = data.getConfig().getOptions().isUsePBS();
         final RemoteCommandAlternative<Qsub, Sbatch> alternative = new RemoteCommandAlternative<>(isPBS, 
             Qsub.class, Sbatch.class,
             data.getWorkingDir() + data.getJobID() + ".batch");
@@ -107,48 +107,50 @@ public class SlurmJob {
         setStatus(GaswStatus.SUCCESSFULLY_SUBMITTED);
     }
 
+    private GaswStatus convertStatus(final String status) {
+        if (status == null) {
+            return GaswStatus.UNDEFINED;
+        }
+        switch (status) {
+            case "COMPLETE":
+                return GaswStatus.COMPLETED;
+            case "COMPLETED":
+                return GaswStatus.COMPLETED;
+            case "PENDING":
+                return GaswStatus.QUEUED;
+            case "CONFIGURING":
+                return GaswStatus.QUEUED;
+            case "RUNNING":
+                return GaswStatus.RUNNING;
+            case "FAILED":
+                return GaswStatus.ERROR;
+            case "NODE_FAIL":
+                return GaswStatus.ERROR;
+            case "BOOT_FAIL":
+                return GaswStatus.ERROR;
+            case "OUT_OF_MEMORY":
+                return GaswStatus.ERROR;
+            default:
+                return GaswStatus.UNDEFINED;
+        }
+    }
+
     private GaswStatus getStatusRequest() {
         final boolean isPBS = data.getConfig().getOptions().isUsePBS();
-        final RemoteCommandAlternative<Tracejob, Scontrol> alternative = new RemoteCommandAlternative<>(isPBS, 
+        final RemoteCommand command = new RemoteCommandAlternative<Tracejob, Scontrol>(isPBS, 
             Tracejob.class, Scontrol.class, 
-            data.getSlurmJobID());
-        final RemoteCommand command = alternative.getCommand();
+            data.getSlurmJobID()).getCommand();
         final String result;
 
         try {
             command.execute(data.getConfig());
 
             if (command.failed()) {
-                System.err.println("la commande status a fail");
                 return GaswStatus.UNDEFINED;
             }
             result = command.result();
-            if (result == null) {
-                return GaswStatus.UNDEFINED;
-            }
+            return convertStatus(result);
 
-            switch (result) {
-                case "COMPLETE":
-                    return GaswStatus.COMPLETED;
-                case "COMPLETED":
-                    return GaswStatus.COMPLETED;
-                case "PENDING":
-                    return GaswStatus.QUEUED;
-                case "CONFIGURING":
-                    return GaswStatus.QUEUED;
-                case "RUNNING":
-                    return GaswStatus.RUNNING;
-                case "FAILED":
-                    return GaswStatus.ERROR;
-                case "NODE_FAIL":
-                    return GaswStatus.ERROR;
-                case "BOOT_FAIL":
-                    return GaswStatus.ERROR;
-                case "OUT_OF_MEMORY":
-                    return GaswStatus.ERROR;
-                default:
-                    return GaswStatus.UNDEFINED;
-            }
         } catch (GaswException e) {
             log.error("Failed to retrieve job status !");
             return GaswStatus.UNDEFINED;

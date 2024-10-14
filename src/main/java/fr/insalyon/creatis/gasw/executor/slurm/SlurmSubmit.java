@@ -41,7 +41,7 @@ public class SlurmSubmit extends GaswSubmit {
         return fileName;
     }
 
-    private void wrappedSubmit(String jobID) throws GaswException {
+    private void wrappedSubmit(final String jobID) throws GaswException {
         try {
             // GAWS DAO
             final JobDAO jobDAO = DAOFactory.getDAOFactory().getJobDAO();

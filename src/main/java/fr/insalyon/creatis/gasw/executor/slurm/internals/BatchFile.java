@@ -5,15 +5,15 @@ import lombok.RequiredArgsConstructor;
 @RequiredArgsConstructor
 public class BatchFile {
     
-    final private SlurmJobData data;
-
-    private StringBuilder builder = new StringBuilder();
+    final private SlurmJobData  data;
+    final private StringBuilder builder = new StringBuilder(1024);
 
     public StringBuilder build() {
-        if (data.getConfig().getOptions().isUsePBS())
+        if (data.getConfig().getOptions().isUsePBS()) {
             doPBS();
-        else
+        } else {
             doSlurm();
+        }
         doCommon();
 
         return builder;
