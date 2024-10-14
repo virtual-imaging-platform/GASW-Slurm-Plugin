@@ -105,7 +105,7 @@
         </repository>
     </repositories>
 
-    <!-- <distributionManagement>
+    <distributionManagement>
         <repository>
             <id>creatis-releases</id>
             <name>Internal Releases</name>
@@ -117,5 +117,5 @@
             <name>Internal Snapshots</name>
             <url>https://vip.creatis.insa-lyon.fr:9007/nexus/repository/snapshots</url>
         </snapshotRepository>
-    </distributionManagement> -->
+    </distributionManagement>
 </project>
