@@ -1,15 +1,16 @@
 {
     "credentials": {
-        "host": "192.168.122.152",
+        "host": "1.2.3.4",
         "port": 22,
-        "username": "almalinux",
-        "privateKeyPath": "mykey",
-        "workingDir": "slurm-working-dir/"
+        "username": "superuser",
+        "privateKeyPath": "/mykeys/ssh_private_key",
+        "workingDir": "mega-working-dir/"
     },
 	"options": {
         "commandExecutionTimeout": 10,
         "sshEventTimeout": 1000,
         "statusRetry": 10,
-        "statusRetryWait": 10
+        "statusRetryWait": 1000,
+	"usePBS": false	
 	}
 }
