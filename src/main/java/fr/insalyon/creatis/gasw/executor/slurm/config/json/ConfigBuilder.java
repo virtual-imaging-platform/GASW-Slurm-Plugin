@@ -11,19 +11,18 @@ import lombok.extern.log4j.Log4j;
 @Log4j
 public class ConfigBuilder {
     
-    private String filePath;
+    final private String filePath;
 
-    public ConfigBuilder(String filePath) {
+    public ConfigBuilder(final String filePath) {
         this.filePath = filePath;
     }
 
     public Config get() {
-        ObjectMapper mapper = new ObjectMapper();
+        final ObjectMapper mapper = new ObjectMapper();
 
         try {
-            Config loadedConfig = mapper.readValue(new File(filePath), Config.class);
+            return mapper.readValue(new File(filePath), Config.class);
 
-            return loadedConfig;
         } catch (IOException e) {
             log.error("Failed to read the configuration file", e);
             return null;

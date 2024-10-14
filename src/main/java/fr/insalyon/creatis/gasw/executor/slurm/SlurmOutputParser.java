@@ -11,25 +11,21 @@ import fr.insalyon.creatis.gasw.executor.slurm.internals.SlurmJob;
 
 public class SlurmOutputParser extends GaswOutputParser{
 
-    private File            stdOut;
-    private File            stdErr;
     final private SlurmJob  job;
 
-    public SlurmOutputParser(SlurmJob job) {
+    public SlurmOutputParser(final SlurmJob job) {
         super(job.getData().getJobID());
         this.job = job;
     }
 
     @Override
     public GaswOutput getGaswOutput() throws GaswException {
+        final File stdOut = getAppStdFile(GaswConstants.OUT_EXT, GaswConstants.OUT_ROOT);
+        final File stdErr = getAppStdFile(GaswConstants.ERR_EXT, GaswConstants.ERR_ROOT);
         GaswExitCode gaswExitCode = GaswExitCode.EXECUTION_CANCELED;
-        job.download();
-
         int exitCode;
 
-        stdOut = getAppStdFile(GaswConstants.OUT_EXT, GaswConstants.OUT_ROOT);
-        stdErr = getAppStdFile(GaswConstants.ERR_EXT, GaswConstants.ERR_ROOT);
-
+        job.download();
         moveProvenanceFile(".");
 
         exitCode = parseStdOut(stdOut);
@@ -51,6 +47,8 @@ public class SlurmOutputParser extends GaswOutputParser{
             case 7:
                 gaswExitCode = GaswExitCode.ERROR_WRITE_LOCAL;
                 break;
+            default:
+                gaswExitCode = GaswExitCode.UNDEFINED;
         }
 
         return new GaswOutput(job.getData().getJobID(), gaswExitCode, "", uploadedResults,

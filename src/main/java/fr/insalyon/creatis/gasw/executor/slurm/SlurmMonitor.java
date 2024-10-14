@@ -18,13 +18,13 @@ import lombok.Setter;
 import lombok.extern.log4j.Log4j;
 
 @Log4j
-public class SlurmMonitor extends GaswMonitor {
+final public class SlurmMonitor extends GaswMonitor {
 
     private static SlurmMonitor instance;
 
+    final private List<SlurmJob>      finishedJobs;
     @Getter @Setter
     private SlurmManager        manager;
-    private List<SlurmJob>      finishedJobs;
     private boolean 		    stop;
 
     public synchronized static SlurmMonitor getInstance() {
@@ -37,15 +37,15 @@ public class SlurmMonitor extends GaswMonitor {
 
     private SlurmMonitor() {
         super();
-        finishedJobs = new ArrayList<SlurmJob>();
+        finishedJobs = new ArrayList<>();
         stop = false;
     }
 
     private void statusChecker() {
-        List<SlurmJob> jobs = manager.getUnfinishedJobs();
+        final List<SlurmJob> jobs = manager.getUnfinishedJobs();
 
-        for (SlurmJob j : jobs) {
-            GaswStatus stus = j.getStatus();
+        for (final SlurmJob j : jobs) {
+            final GaswStatus stus = j.getStatus();
 
             System.err.println("job : " + j.getData().getJobID() + " : " + stus.toString());
             if (stus != GaswStatus.RUNNING && stus != GaswStatus.QUEUED && stus != GaswStatus.UNDEFINED && stus != GaswStatus.NOT_SUBMITTED) {
@@ -63,9 +63,9 @@ public class SlurmMonitor extends GaswMonitor {
             statusChecker();
             try {
                 while (hasFinishedJobs()) {
-                    SlurmJob sJob = pullFinishedJobID();
-                    GaswStatus status = sJob.getStatus();
-                    Job job = jobDAO.getJobByID(sJob.getData().getJobID());
+                    final SlurmJob sJob = pullFinishedJobID();
+                    final GaswStatus status = sJob.getStatus();
+                    final Job job = jobDAO.getJobByID(sJob.getData().getJobID());
                     
                     if (status == GaswStatus.ERROR || status == GaswStatus.COMPLETED) {
                         job.setExitCode(sJob.getExitCode());
@@ -88,8 +88,8 @@ public class SlurmMonitor extends GaswMonitor {
     }
 
     @Override
-    public synchronized void add(String jobID, String symbolicName, String fileName, String parameters) throws GaswException {
-        Job job = new Job(jobID, GaswConfiguration.getInstance().getSimulationID(),
+    public synchronized void add(final String jobID, final String symbolicName, final String fileName, final String parameters) throws GaswException {
+        final Job job = new Job(jobID, GaswConfiguration.getInstance().getSimulationID(),
             GaswStatus.QUEUED, symbolicName, fileName, parameters,
             Constants.EXECUTOR_NAME);
 
@@ -105,7 +105,7 @@ public class SlurmMonitor extends GaswMonitor {
     }
 
     public SlurmJob pullFinishedJobID() {
-        SlurmJob lastJob = finishedJobs.get(0);
+        final SlurmJob lastJob = finishedJobs.get(0);
 
         finishedJobs.remove(lastJob);
         return lastJob;
@@ -115,7 +115,7 @@ public class SlurmMonitor extends GaswMonitor {
         return ! finishedJobs.isEmpty();
     }
 
-    public synchronized void addFinishedJob(SlurmJob job) {
+    public synchronized void addFinishedJob(final SlurmJob job) {
         finishedJobs.add(job);
     }
 
@@ -127,9 +127,9 @@ public class SlurmMonitor extends GaswMonitor {
         }
     }
 
-    public void updateJob(String jobID, GaswStatus status) {
+    public void updateJob(final String jobID, final GaswStatus status) {
         try {
-            var job = jobDAO.getJobByID(jobID);
+            final Job job = jobDAO.getJobByID(jobID);
 
             if (job.getStatus() != status) {
                 job.setStatus(status);

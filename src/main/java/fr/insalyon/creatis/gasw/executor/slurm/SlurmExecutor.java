@@ -11,13 +11,14 @@ import fr.insalyon.creatis.gasw.executor.slurm.config.json.ConfigBuilder;
 import fr.insalyon.creatis.gasw.executor.slurm.config.json.properties.Config;
 import fr.insalyon.creatis.gasw.executor.slurm.internals.SlurmManager;
 import fr.insalyon.creatis.gasw.plugin.ExecutorPlugin;
+import lombok.NoArgsConstructor;
 import net.xeoh.plugins.base.annotations.PluginImplementation;
 
-@PluginImplementation
+@PluginImplementation @NoArgsConstructor
 public class SlurmExecutor implements ExecutorPlugin {
 
     private SlurmManager    manager;
-    private SlurmSubmit     submit;
+    private SlurmSubmit     submitter;
     private boolean         loaded = false;
 
     @Override
@@ -26,10 +27,10 @@ public class SlurmExecutor implements ExecutorPlugin {
     }
 
     @Override
-    public void load(GaswInput gaswInput) throws GaswException {
+    public void load(final GaswInput gaswInput) throws GaswException {
         if ( ! loaded) {
-            ConfigBuilder configBuilder = new ConfigBuilder(Constants.pluginConfig);
-            Config config = configBuilder.get();
+            final ConfigBuilder configBuilder = new ConfigBuilder(Constants.PLUGIN_CONFIG);
+            final Config config = configBuilder.get();
 
             manager = new SlurmManager(GaswConfiguration.getInstance().getSimulationID(), config);
             manager.init();
@@ -37,18 +38,18 @@ public class SlurmExecutor implements ExecutorPlugin {
             SlurmMonitor.getInstance().setManager(manager);
             loaded = true;
         }
-        submit = new SlurmSubmit(gaswInput, new SlurmMinorStatusGenerator(), manager);
+        submitter = new SlurmSubmit(gaswInput, new SlurmMinorStatusGenerator(), manager);
     }
 
     @Override
     public List<Class> getPersistentClasses() throws GaswException {
-        return new ArrayList<Class>();
+        return new ArrayList<>();
     }
 
     @Override
     public String submit() throws GaswException {
         System.err.println("je fais une demande de submit ici");
-        return submit.submit();
+        return submitter.submit();
     }
 
     @Override

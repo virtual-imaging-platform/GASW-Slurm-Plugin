@@ -3,9 +3,10 @@ package fr.insalyon.creatis.gasw.executor.slurm.config.json.properties;
 import com.fasterxml.jackson.annotation.JsonProperty;
 
 import lombok.Getter;
+import lombok.NoArgsConstructor;
 import lombok.Setter;
 
-@Getter @Setter
+@Getter @Setter @NoArgsConstructor
 public class Credentials {
     
     @JsonProperty(value = "host", required = true)

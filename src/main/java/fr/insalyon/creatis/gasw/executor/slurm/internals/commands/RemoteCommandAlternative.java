@@ -15,7 +15,7 @@ public class RemoteCommandAlternative<A, B> {
     /**
      * @implNote If classA or classB constructor is different than constr(string e), it will not work
      */
-    public RemoteCommandAlternative(boolean evaluator, Class<A> classA, Class<B> classB, String data) {
+    public RemoteCommandAlternative(final boolean evaluator, final Class<A> classA, final Class<B> classB, final String data) {
         this.data = data;
         this.evaluator = evaluator;
         this.classA = classA;

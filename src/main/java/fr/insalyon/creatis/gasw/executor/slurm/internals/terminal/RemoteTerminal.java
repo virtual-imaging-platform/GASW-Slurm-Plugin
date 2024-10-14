@@ -36,24 +36,21 @@ public class RemoteTerminal {
     private SshClient               client;
     private ClientSession           session;
 
-    public RemoteTerminal(Config config) {
+    public RemoteTerminal(final Config config) {
         this.config = config;
         this.cred = config.getCredentials();
     }
 
     private void init() throws GaswException {
         try {
-            KeyPairResourceLoader loader = SecurityUtils.getKeyPairResourceParser();
-            Collection<KeyPair> keys = loader.loadKeyPairs(null, Paths.get(cred.getPrivateKeyPath()), null);
+            final KeyPairResourceLoader loader = SecurityUtils.getKeyPairResourceParser();
+            final Collection<KeyPair> keys = loader.loadKeyPairs(null, Paths.get(cred.getPrivateKeyPath()), null);
 
             client = SshClient.setUpDefaultClient();
             client.setKeyIdentityProvider(KeyIdentityProvider.wrapKeyPairs(keys));
             client.start();
 
-        } catch (GeneralSecurityException e) {
-            log.error(e);
-            throw new GaswException("Failed to init");
-        } catch (IOException e) {
+        } catch (GeneralSecurityException | IOException e) {
             log.error(e);
             throw new GaswException("Failed to init");
         }
@@ -86,9 +83,9 @@ public class RemoteTerminal {
         }
     }
 
-    public void upload(String localFile, String remoteLocation) throws GaswException {
-        ScpClientCreator creator = ScpClientCreator.instance();
-        ScpClient scpClient = creator.createScpClient(session);
+    public void upload(final String localFile, final String remoteLocation) throws GaswException {
+        final ScpClientCreator creator = ScpClientCreator.instance();
+        final ScpClient scpClient = creator.createScpClient(session);
 
         try {
             scpClient.upload(Paths.get(localFile), remoteLocation);
@@ -98,9 +95,9 @@ public class RemoteTerminal {
         }
     }
 
-    public void download(String remoteFile, String localLocation) throws GaswException {
-        ScpClientCreator creator = ScpClientCreator.instance();
-        ScpClient scpClient = creator.createScpClient(session);
+    public void download(final String remoteFile, final String localLocation) throws GaswException {
+        final ScpClientCreator creator = ScpClientCreator.instance();
+        final ScpClient scpClient = creator.createScpClient(session);
 
         try {
             scpClient.download(remoteFile, Paths.get(localLocation));
@@ -111,7 +108,7 @@ public class RemoteTerminal {
     }
 
 
-    public RemoteOutput executeCommand(String command) {
+    public RemoteOutput executeCommand(final String command) {
         try (ByteArrayOutputStream stdout = new ByteArrayOutputStream();
                  ByteArrayOutputStream stderr = new ByteArrayOutputStream();
                  ChannelExec channel = session.createExecChannel(command)) {
@@ -129,9 +126,9 @@ public class RemoteTerminal {
         }
     }
 
-    public static RemoteOutput oneCommand(Config config, String command) {
-        RemoteTerminal term = new RemoteTerminal(config);
-        RemoteOutput result = null;
+    public static RemoteOutput oneCommand(final Config config, final String command) {
+        final RemoteTerminal term = new RemoteTerminal(config);
+        final RemoteOutput result;
 
         try {
             term.connect();

@@ -3,8 +3,9 @@ package fr.insalyon.creatis.gasw.executor.slurm.config.json.properties;
 import com.fasterxml.jackson.annotation.JsonProperty;
 
 import lombok.Getter;
+import lombok.NoArgsConstructor;
 
-@Getter
+@Getter @NoArgsConstructor
 public class Options {
     
     /* value in millis */
@@ -25,4 +26,7 @@ public class Options {
     /* By default the system use slurn */
     @JsonProperty(value = "usePBS")
     private boolean usePBS = false;
+
+    @JsonProperty("timeToBeReady")
+    private int timeToBeReady = 120;
 }

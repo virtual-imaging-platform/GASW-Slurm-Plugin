@@ -20,22 +20,22 @@ public class BatchFile {
     }
 
     private void doCommon() {
-        builder.append("cd " + data.getWorkingDir() + "\n");
-        builder.append(data.getCommand() + "\n");
-        builder.append("echo $? > " + data.getExitCodePath() + "\n");
+        builder.append("cd " + data.getWorkingDir() + "\n")
+            .append(data.getCommand() + "\n")
+            .append("echo $? > " + data.getExitCodePath() + "\n");
     }
 
     private void doSlurm() {
-        builder.append("#!/bin/sh\n");
-        builder.append("#SBATCH --job-name=" + data.getJobID() + "\n");
-        builder.append("#SBATCH --output=" + data.getStdoutPath() + "\n");
-        builder.append("#SBATCH --error=" + data.getStderrPath() + "\n");
+        builder.append("#!/bin/sh\n")
+            .append("#SBATCH --job-name=" + data.getJobID() + "\n")
+            .append("#SBATCH --output=" + data.getStdoutPath() + "\n")
+            .append("#SBATCH --error=" + data.getStderrPath() + "\n");
     }
 
     private void doPBS() {
-        builder.append("#!/bin/sh\n");
-        builder.append("#PBS -N " + data.getJobID() + "\n");
-        builder.append("#PBS -o " + data.getStdoutPath() + "\n");
-        builder.append("#PBS -e " + data.getStderrPath() + "\n");
+        builder.append("#!/bin/sh\n")
+            .append("#PBS -N " + data.getJobID() + "\n")
+            .append("#PBS -o " + data.getStdoutPath() + "\n")
+            .append("#PBS -e " + data.getStderrPath() + "\n");
     }
 }

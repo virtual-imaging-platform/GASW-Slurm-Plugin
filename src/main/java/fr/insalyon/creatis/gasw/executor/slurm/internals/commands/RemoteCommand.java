@@ -15,20 +15,17 @@ public abstract class RemoteCommand {
     @Getter
     private RemoteOutput    output;
 
-    public RemoteCommand execute(Config config) throws GaswException {
+    public RemoteCommand execute(final Config config) throws GaswException {
         output = RemoteTerminal.oneCommand(config, command);
         return this;
     }
 
     public boolean failed() {
         if (output != null) {
-            if (output.getExitCode() != 0)
-                return true;
-            if ( ! output.getStderr().getContent().isEmpty())
-                return true;
-            return false;
+            return (output.getExitCode() != 0 || ( ! output.getStderr().getContent().isEmpty()));
+        } else {
+            return true;
         }
-        return true;
     }
 
     public abstract String result();

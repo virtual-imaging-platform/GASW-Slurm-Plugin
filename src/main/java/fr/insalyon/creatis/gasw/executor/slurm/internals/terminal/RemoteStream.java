@@ -16,24 +16,26 @@ public class RemoteStream {
     /**
      * @return the splited row(index)
      */
-    public String[] getRow(int index){
-        String[] splited = getLines();
+    public String[] getRow(final int index){
+        final String[] splited = getLines();
 
-        if (index >= splited.length)
+        if (index >= splited.length) {
             throw new IndexOutOfBoundsException();
-        return splited[index].split(Constants.splitRegex);
+        }
+        return splited[index].split(Constants.SPLIT_REGEX);
     }
 
     /**
      * We assume that all rows have the same format !
      * @return the splited column(index)
      */
-    public String[] getColumn(int index) {
-        String[] first = getRow(0);
-        String[] result = new String[getLines().length];
+    public String[] getColumn(final int index) {
+        final String[] first = getRow(0);
+        final String[] result = new String[getLines().length];
 
-        if (index > first.length)
+        if (index > first.length) {
             throw new IndexOutOfBoundsException();
+        }
         for (int i = 0; i < getLines().length; i++) {
             result[i] = getRow(i)[index];
         }

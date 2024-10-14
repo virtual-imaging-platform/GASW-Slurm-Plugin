@@ -28,8 +28,8 @@ public class SlurmJob {
     private GaswStatus          status = GaswStatus.NOT_SUBMITTED;
 
     private void createBatchFile() throws GaswException {
-        BatchFile batchFile = new BatchFile(data);
-        RemoteOutput output;
+        final BatchFile batchFile = new BatchFile(data);
+        final RemoteOutput output;
 
         output = RemoteTerminal.oneCommand(data.getConfig(), "echo -en '" + batchFile.build().toString() + "' > " + data.getWorkingDir() + data.getJobID() + ".batch");
 
@@ -44,10 +44,10 @@ public class SlurmJob {
      * @throws GaswException
      */
     public void prepare() throws GaswException {
-        RemoteTerminal rt = new RemoteTerminal(data.getConfig());
+        final RemoteTerminal rt = new RemoteTerminal(data.getConfig());
 
         rt.connect();
-        for (RemoteFile file : data.getFilesUpload()) {
+        for (final RemoteFile file : data.getFilesUpload()) {
             rt.upload(file.getSource(), file.getDest());
         }
         rt.disconnect();
@@ -57,17 +57,17 @@ public class SlurmJob {
      * Download all the data created by the jobs (not the app output) but the logs.
      */
     public void download() {
-        RemoteTerminal rt = new RemoteTerminal(data.getConfig());
+        final RemoteTerminal rt = new RemoteTerminal(data.getConfig());
 
         try {
-
             rt.connect();
-            for (RemoteFile file : data.getFilesDownload()) {
+            for (final RemoteFile file : data.getFilesDownload()) {
                 System.err.println("je dois telecharger " + file.getSource());
                 rt.download(file.getSource(), file.getDest());
             }
             rt.disconnect();
             System.err.println("j'ai telecharger les outputs");
+
         } catch (GaswException e) {
             log.error("Failed to download the files !", e);
         }
@@ -77,21 +77,23 @@ public class SlurmJob {
 
     public void submit() throws GaswException {
         boolean isPBS = data.getConfig().getOptions().isUsePBS();
-        RemoteCommandAlternative<Qsub, Sbatch> alternative = new RemoteCommandAlternative<>(isPBS, 
+        final RemoteCommandAlternative<Qsub, Sbatch> alternative = new RemoteCommandAlternative<>(isPBS, 
             Qsub.class, Sbatch.class,
             data.getWorkingDir() + data.getJobID() + ".batch");
-        RemoteCommand command = alternative.getCommand();
+        final RemoteCommand command = alternative.getCommand();
 
         try {
             command.execute(data.getConfig());
 
-            if (command.failed())
+            if (command.failed()) {
                 throw new GaswException("Command failed !");
+            }
             data.setSlurmJobID(command.result());
             System.err.println("VOICI LE BTACH JOB " + command.result() + " | " + command.getOutput().getStdout().getContent());
             
         } catch (GaswException e) {
-            throw new GaswException("Failed subbmit the job " + e.getMessage());
+            log.error("Failed to submit the job " + getData().getJobID());
+            throw e;
         }
     }
 
@@ -106,12 +108,12 @@ public class SlurmJob {
     }
 
     private GaswStatus getStatusRequest() {
-        boolean isPBS = data.getConfig().getOptions().isUsePBS();
-        RemoteCommandAlternative<Tracejob, Scontrol> alternative = new RemoteCommandAlternative<>(isPBS, 
+        final boolean isPBS = data.getConfig().getOptions().isUsePBS();
+        final RemoteCommandAlternative<Tracejob, Scontrol> alternative = new RemoteCommandAlternative<>(isPBS, 
             Tracejob.class, Scontrol.class, 
             data.getSlurmJobID());
-        RemoteCommand command = alternative.getCommand();
-        String result = null;
+        final RemoteCommand command = alternative.getCommand();
+        final String result;
 
         try {
             command.execute(data.getConfig());
@@ -121,8 +123,9 @@ public class SlurmJob {
                 return GaswStatus.UNDEFINED;
             }
             result = command.result();
-            if (result == null)
+            if (result == null) {
                 return GaswStatus.UNDEFINED;
+            }
 
             switch (result) {
                 case "COMPLETE":
@@ -153,7 +156,7 @@ public class SlurmJob {
     }
 
     public int getExitCode() {
-        RemoteCommand command = new Cat(data.getWorkingDir() + data .getExitCodePath());
+        final RemoteCommand command = new Cat(data.getWorkingDir() + data .getExitCodePath());
         
         try {
             command.execute(data.getConfig());
@@ -171,15 +174,17 @@ public class SlurmJob {
     }
 
     public GaswStatus getStatus() {
-        GaswStatus rawStatus = null;
+        GaswStatus rawStatus;
 
-        if (status == GaswStatus.NOT_SUBMITTED || status == GaswStatus.UNDEFINED || status == GaswStatus.STALLED)
+        if (status == GaswStatus.NOT_SUBMITTED || status == GaswStatus.UNDEFINED || status == GaswStatus.STALLED) {
             return status;
+        }
         for (int i = 0; i < data.getConfig().getOptions().getStatusRetry(); i++) {
             rawStatus = getStatusRequest();
 
-            if (rawStatus != GaswStatus.UNDEFINED)
+            if (rawStatus != GaswStatus.UNDEFINED) {
                 return rawStatus;
+            }
             Utils.sleepNException(data.getConfig().getOptions().getStatusRetryWait());
         }
         return GaswStatus.STALLED;

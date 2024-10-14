@@ -4,7 +4,7 @@ import fr.insalyon.creatis.gasw.executor.slurm.internals.commands.RemoteCommand;
 
 public class Rm extends RemoteCommand {
 
-    public Rm (String elementToDelete, String options) {
+    public Rm (final String elementToDelete, final String options) {
         super("rm " + options + " " + elementToDelete);
     }
 
