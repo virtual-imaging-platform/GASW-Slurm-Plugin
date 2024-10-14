@@ -4,11 +4,14 @@
 This plugin allow to support two orchestrations tools Slurm and PBS.  
 [Differences between PBS and Slurm](https://www.youtube.com/watch?v=iNIflomRn00)
 
+> [!IMPORTANT]
+> **Slurm** and **PBS** are very similar in fact.
+
 ## PBS !?
 > [!NOTE]
 > If you have never used PBS before, take a look at those links !
-> 
->
+> [Portable Batch System](https://en.wikipedia.org/wiki/Portable_Batch_System)
+> [Docs](https://ncar-hpc-docs.readthedocs.io/en/latest/pbs/job-scripts/#listing-of-frequently-used-pbs-directives)
 
 ## Slurm !?
 > [!NOTE]
