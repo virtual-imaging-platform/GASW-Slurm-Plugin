@@ -1,5 +1,10 @@
 package fr.insalyon.creatis.gasw.executor.slurm.internals.commands;
 
+import java.lang.reflect.InvocationTargetException;
+
+import lombok.extern.log4j.Log4j;
+
+@Log4j
 public class RemoteCommandAlternative<A, B> {
     
     final private String    data;
@@ -28,10 +33,8 @@ public class RemoteCommandAlternative<A, B> {
             } else {
                 return (RemoteCommand) classB.getDeclaredConstructors()[0].newInstance(data);
             }
-        } catch (Exception e) {
-            e.printStackTrace();
-            System.err.println(e.getMessage());
-            System.err.println(e.getStackTrace());
+        } catch (InstantiationException | IllegalAccessException | IllegalArgumentException | InvocationTargetException e) {
+            log.error("Fail to build the command (using alternative)", e);
         }
         return null;
     }

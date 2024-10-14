@@ -81,10 +81,7 @@ public class SlurmMonitor extends GaswMonitor {
 
                 Thread.sleep(GaswConfiguration.getInstance().getDefaultSleeptime());
 
-            } catch (GaswException ex) {
-            } catch (DAOException ex) {
-                log.error(ex);
-            } catch (InterruptedException ex) {
+            } catch (GaswException | DAOException | InterruptedException ex) {
                 log.error(ex);
             }
         }

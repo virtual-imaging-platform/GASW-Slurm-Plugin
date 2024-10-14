@@ -16,7 +16,6 @@ public abstract class RemoteCommand {
     private RemoteOutput    output;
 
     public RemoteCommand execute(Config config) throws GaswException {
-        System.err.println("command execute : " + command);
         output = RemoteTerminal.oneCommand(config, command);
         return this;
     }

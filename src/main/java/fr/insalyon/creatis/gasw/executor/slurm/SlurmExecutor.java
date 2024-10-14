@@ -53,7 +53,6 @@ public class SlurmExecutor implements ExecutorPlugin {
 
     @Override
     public void terminate() throws GaswException {
-
         manager.destroy();
         // Gasw
         SlurmMonitor.getInstance().finish();
