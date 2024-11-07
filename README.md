@@ -1,4 +1,4 @@
-# GASW-Slurm-Plugin
+# GASW-Batch-Plugin
 
 # Supported orchestrations tools
 This plugin allow to support two orchestrations tools Slurm and PBS.  
@@ -27,7 +27,7 @@ It is called from the *engine motor* and then utilised in completition of [GASW]
 
 ### Prerequisite
 To run this plugin you need to use at least **Java 21** runtime environnement.  
-You should also provide **config.json** file witch contain the information about the plugin it self (the location shall be */var/www/cgi-bin/slurm/config.json*).  
+You should also provide **config.json** file witch contain the information about the plugin it self (the location shall be */var/www/cgi-bin/m2Server-gasw3/conf/batch.conf*).  
 
 ### Working
 To deal with PBS and Slurm we use an SSH connection witch replace the API of the Kubernetes plugin for example.  

@@ -1,7 +1,7 @@
 ####################
 
 VERSION		= 0.0.1
-NAME		= gasw-slurm-plugin
+NAME		= gasw-batch-plugin
 EXECUTABLE  = target/$(NAME)-$(VERSION)-jar-with-dependencies.jar
 EXECUTOR 	= java -jar
 
