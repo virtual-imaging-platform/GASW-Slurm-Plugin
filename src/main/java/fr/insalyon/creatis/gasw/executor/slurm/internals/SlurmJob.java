@@ -34,7 +34,6 @@ public class SlurmJob {
         output = RemoteTerminal.oneCommand(data.getConfig(), "echo -en '" + batchFile.build().toString() + "' > " + data.getWorkingDir() + data.getJobID() + ".batch");
 
         if ( output == null || output.getExitCode() != 0 || ! output.getStderr().getContent().isEmpty()) {
-            System.out.println(output.getStderr().getContent());
             throw new GaswException("Impossible to create the batch file");
         }
     }
@@ -48,6 +47,7 @@ public class SlurmJob {
 
         rt.connect();
         for (final RemoteFile file : data.getFilesUpload()) {
+            log.info("Uploading file : " + file.getSource());
             rt.upload(file.getSource(), file.getDest());
         }
         rt.disconnect();
@@ -62,11 +62,10 @@ public class SlurmJob {
         try {
             rt.connect();
             for (final RemoteFile file : data.getFilesDownload()) {
-                System.err.println("je dois telecharger " + file.getSource());
+                log.info("Downloading file : " + file.getSource());
                 rt.download(file.getSource(), file.getDest());
             }
             rt.disconnect();
-            System.err.println("j'ai telecharger les outputs");
 
         } catch (GaswException e) {
             log.error("Failed to download the files !", e);
@@ -89,7 +88,7 @@ public class SlurmJob {
                 throw new GaswException("Command failed !");
             }
             data.setSlurmJobID(command.result());
-            System.err.println("VOICI LE BTACH JOB " + command.result() + " | " + command.getOutput().getStdout().getContent());
+            log.debug("Job ID inside the Cluter : " + command.result());
             
         } catch (GaswException e) {
             log.error("Failed to submit the job " + getData().getJobID());
@@ -98,11 +97,8 @@ public class SlurmJob {
     }
 
     public void start() throws GaswException {
-        System.err.println("je prepare");
         prepare();
-        System.err.println("je batch");
         createBatchFile();
-        System.err.println("je submit");
         submit();
         setStatus(GaswStatus.SUCCESSFULLY_SUBMITTED);
     }
@@ -164,7 +160,6 @@ public class SlurmJob {
             command.execute(data.getConfig());
 
             if (command.failed()) {
-                System.err.println("FAILED TO CAT THE FILE");
                 return 1;
             }
             return Integer.parseInt(command.result().trim());

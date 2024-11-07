@@ -47,7 +47,7 @@ final public class SlurmMonitor extends GaswMonitor {
         for (final SlurmJob j : jobs) {
             final GaswStatus stus = j.getStatus();
 
-            System.err.println("job : " + j.getData().getJobID() + " : " + stus.toString());
+            log.debug("Job ID : " + j.getData().getJobID() + " -> " + stus.toString());
             if (stus != GaswStatus.RUNNING && stus != GaswStatus.QUEUED && stus != GaswStatus.UNDEFINED && stus != GaswStatus.NOT_SUBMITTED) {
                 j.setTerminated(true);
                 finishedJobs.add(j);
@@ -73,7 +73,6 @@ final public class SlurmMonitor extends GaswMonitor {
                     } else {
                         job.setStatus(status);
                     }
-                    System.err.println("job : " + sJob.getData().getJobID() + " final : " + job.getStatus());
                     
                     jobDAO.update(job);
                     new SlurmOutputParser(sJob).start();
@@ -81,8 +80,11 @@ final public class SlurmMonitor extends GaswMonitor {
 
                 Thread.sleep(GaswConfiguration.getInstance().getDefaultSleeptime());
 
-            } catch (GaswException | DAOException | InterruptedException ex) {
-                log.error(ex);
+            } catch (GaswException | DAOException ex) {
+                log.error("Ignored exception !", ex);
+            } catch (InterruptedException ex) {
+                log.error("Interrupted exception, stopping the worker !");
+                finish();
             }
         }
     }
@@ -100,7 +102,7 @@ final public class SlurmMonitor extends GaswMonitor {
             jobDAO.update(job);
 
         } catch (DAOException ex) {
-            System.err.println(ex.getMessage());
+            log.error(ex);
         }
     }
 

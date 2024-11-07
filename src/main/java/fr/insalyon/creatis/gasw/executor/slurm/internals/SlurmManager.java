@@ -181,7 +181,6 @@ public class SlurmManager {
                         if (exec.getStatus() == GaswStatus.NOT_SUBMITTED) {
                             exec.setStatus(GaswStatus.QUEUED);
                             exec.start();
-                            System.err.println("je fais le start");
                         }
                     }
                 }

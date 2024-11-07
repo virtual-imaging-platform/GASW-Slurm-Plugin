@@ -48,7 +48,6 @@ public class SlurmExecutor implements ExecutorPlugin {
 
     @Override
     public String submit() throws GaswException {
-        System.err.println("je fais une demande de submit ici");
         return submitter.submit();
     }
 
