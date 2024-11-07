@@ -27,15 +27,7 @@ final public class SlurmMonitor extends GaswMonitor {
     private SlurmManager        manager;
     private boolean 		    stop;
 
-    public synchronized static SlurmMonitor getInstance() {
-        if (instance == null) {
-            instance = new SlurmMonitor();
-            instance.start();
-        }
-        return instance;
-    }
-
-    private SlurmMonitor() {
+    public SlurmMonitor() {
         super();
         finishedJobs = new ArrayList<>();
         stop = false;

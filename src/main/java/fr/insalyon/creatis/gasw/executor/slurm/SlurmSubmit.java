@@ -18,11 +18,13 @@ import lombok.extern.log4j.Log4j;
 public class SlurmSubmit extends GaswSubmit {
 
     final private SlurmManager manager;
+    final private SlurmMonitor monitor;
 
-    public SlurmSubmit(final GaswInput gaswInput, final SlurmMinorStatusGenerator minorStatusServiceGenerator, final SlurmManager manager) throws GaswException {
+    public SlurmSubmit(final GaswInput gaswInput, final SlurmMinorStatusGenerator minorStatusServiceGenerator, final SlurmManager manager, final SlurmMonitor monitor) throws GaswException {
         super(gaswInput, minorStatusServiceGenerator);
         scriptName = generateScript();
         this.manager = manager;
+        this.monitor = monitor;
     }
 
     @Override
@@ -34,10 +36,12 @@ public class SlurmSubmit extends GaswSubmit {
             params.append(p + " ");
         }
 
-        SlurmMonitor.getInstance().add(fileName, gaswInput.getExecutableName(), fileName, params.toString());
+        if ( ! monitor.isAlive())
+            monitor.start();
+        monitor.add(fileName, gaswInput.getExecutableName(), fileName, params.toString());
         wrappedSubmit(fileName);
-        log.info("K8s Executor Job ID: " + fileName);
 
+        log.info("Slurm Executor Job ID: " + fileName);
         return fileName;
     }
 

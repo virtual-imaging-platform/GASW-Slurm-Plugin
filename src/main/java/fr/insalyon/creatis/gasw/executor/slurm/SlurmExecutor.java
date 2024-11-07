@@ -3,6 +3,8 @@ package fr.insalyon.creatis.gasw.executor.slurm;
 import java.util.ArrayList;
 import java.util.List;
 
+import org.apache.commons.logging.impl.SLF4JLogFactory;
+
 import fr.insalyon.creatis.gasw.GaswConfiguration;
 import fr.insalyon.creatis.gasw.GaswException;
 import fr.insalyon.creatis.gasw.GaswInput;
@@ -19,6 +21,7 @@ public class SlurmExecutor implements ExecutorPlugin {
 
     private SlurmManager    manager;
     private SlurmSubmit     submitter;
+    private SlurmMonitor    monitor;
     private boolean         loaded = false;
 
     @Override
@@ -35,10 +38,11 @@ public class SlurmExecutor implements ExecutorPlugin {
             manager = new SlurmManager(GaswConfiguration.getInstance().getSimulationID(), config);
             manager.init();
 
-            SlurmMonitor.getInstance().setManager(manager);
+            monitor = new SlurmMonitor();
+            monitor.setManager(manager);
             loaded = true;
         }
-        submitter = new SlurmSubmit(gaswInput, new SlurmMinorStatusGenerator(), manager);
+        submitter = new SlurmSubmit(gaswInput, new SlurmMinorStatusGenerator(), manager, monitor);
     }
 
     @Override
@@ -55,6 +59,6 @@ public class SlurmExecutor implements ExecutorPlugin {
     public void terminate() throws GaswException {
         manager.destroy();
         // Gasw
-        SlurmMonitor.getInstance().finish();
+        monitor.finish();
     }
 }
