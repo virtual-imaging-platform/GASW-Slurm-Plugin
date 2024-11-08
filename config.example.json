@@ -6,12 +6,12 @@
         "privateKeyPath": "/mykeys/ssh_private_key",
         "workingDir": "mega-working-dir/"
     },
-	"options": {
-        "commandExecutionTimeout": 10,
-        "sshEventTimeout": 1000,
+    "options": {
+        "commandExecutionTimeoutInMillis": 10,
+        "sshEventTimeoutInMillis": 1000,
         "statusRetry": 10,
-        "statusRetryWait": 1000,
-        "timeBeReady": 120,
-	    "usePBS": false
-	}
+        "statusRetryWaitInMillis": 1000,
+        "timeBeReadyInSeconds": 120,
+        "usePBS": false
+    }
 }

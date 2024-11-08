@@ -9,24 +9,24 @@ import lombok.NoArgsConstructor;
 public class BatchOptions {
     
     /* value in millis */
-    @JsonProperty(value = "commandExecutionTimeout")
+    @JsonProperty(value = "commandExecutionTimeoutInMillis")
     private int commandExecutionTimeout = 10;
 
     /* value in millis */
-    @JsonProperty(value = "sshEventTimeout")
+    @JsonProperty(value = "sshEventTimeoutInMillis")
     private int sshEventTimeout = 1000;
 
     @JsonProperty(value = "statusRetry")
     private int statusRetry = 10;
 
     /* value in millis */
-    @JsonProperty(value = "statusRetryWait")
+    @JsonProperty(value = "statusRetryWaitInMillis")
     private int statusRetryWait = 10;
 
-    /* By default the system use slurn */
+    /* By default the system use slurm */
     @JsonProperty(value = "usePBS")
     private boolean usePBS = false;
 
-    @JsonProperty("timeToBeReady")
+    @JsonProperty("timeToBeReadyInSeconds")
     private int timeToBeReady = 120;
 }
