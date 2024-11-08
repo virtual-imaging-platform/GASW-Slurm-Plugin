@@ -1,8 +1,6 @@
 package fr.insalyon.creatis.gasw.executor.batch;
 
-import java.util.ArrayList;
 import java.util.Date;
-import java.util.List;
 
 import fr.insalyon.creatis.gasw.GaswConfiguration;
 import fr.insalyon.creatis.gasw.GaswException;
@@ -22,54 +20,47 @@ final public class BatchMonitor extends GaswMonitor {
 
     private static BatchMonitor instance;
 
-    final private List<BatchJob>      finishedJobs;
     @Getter @Setter
     private BatchManager        manager;
     private boolean 		    stop;
 
     public BatchMonitor() {
         super();
-        finishedJobs = new ArrayList<>();
         stop = false;
     }
 
-    private void statusChecker() {
-        final List<BatchJob> jobs = manager.getUnfinishedJobs();
-
-        for (final BatchJob j : jobs) {
-            final GaswStatus stus = j.getStatus();
-
-            log.debug("Job ID : " + j.getData().getJobID() + " -> " + stus.toString());
-            if (stus != GaswStatus.RUNNING && stus != GaswStatus.QUEUED && stus != GaswStatus.UNDEFINED && stus != GaswStatus.NOT_SUBMITTED) {
-                j.setTerminated(true);
-                finishedJobs.add(j);
-            } else if (stus ==  GaswStatus.RUNNING) {
-                updateJob(j.getData().getJobID(), stus);
-            }
-        }
+    private boolean notRunningJob(GaswStatus s) {
+        return s != GaswStatus.RUNNING
+        && s != GaswStatus.QUEUED
+        && s != GaswStatus.UNDEFINED
+        && s != GaswStatus.NOT_SUBMITTED;
     }
+
 
     @Override
     public void run() {
         while (!stop) {
-            statusChecker();
             try {
-                while (hasFinishedJobs()) {
-                    final BatchJob sJob = pullFinishedJobID();
-                    final GaswStatus status = sJob.getStatus();
-                    final Job job = jobDAO.getJobByID(sJob.getData().getJobID());
+                for (final BatchJob job : manager.getUnfinishedJobs()) {
+                    final Job daoJob = jobDAO.getJobByID(job.getData().getJobID());
+                    final GaswStatus status = job.getStatus();
                     
-                    if (status == GaswStatus.ERROR || status == GaswStatus.COMPLETED) {
-                        job.setExitCode(sJob.getExitCode());
-                        job.setStatus(job.getExitCode() == 0 ? GaswStatus.COMPLETED : GaswStatus.ERROR);
-                    } else {
-                        job.setStatus(status);
-                    }
-                    
-                    jobDAO.update(job);
-                    new BatchOutputParser(sJob).start();
-                }
+                    if (notRunningJob(status)) {
+                        job.setTerminated(true);
+                        if (status == GaswStatus.ERROR || status == GaswStatus.COMPLETED) {
+                            daoJob.setExitCode(job.getExitCode());
+                            daoJob.setStatus(job.getExitCode() == 0 ? GaswStatus.COMPLETED : GaswStatus.ERROR);
+                        } else {
+                            daoJob.setStatus(status);
+                        }
 
+                        jobDAO.update(daoJob);
+                        new BatchOutputParser(job).start();
+
+                    } else if (status == GaswStatus.RUNNING) {
+                        updateJob(job.getData().getJobID(), status);
+                    }
+                }
                 Thread.sleep(GaswConfiguration.getInstance().getDefaultSleeptime());
 
             } catch (GaswException | DAOException ex) {
@@ -87,30 +78,9 @@ final public class BatchMonitor extends GaswMonitor {
             GaswStatus.QUEUED, symbolicName, fileName, parameters,
             Constants.EXECUTOR_NAME);
 
+        job.setQueued(new Date());
         add(job);
         log.info("Adding job: " + jobID);
-        try {
-            job.setQueued(new Date());
-            jobDAO.update(job);
-
-        } catch (DAOException ex) {
-            log.error(ex);
-        }
-    }
-
-    public BatchJob pullFinishedJobID() {
-        final BatchJob lastJob = finishedJobs.get(0);
-
-        finishedJobs.remove(lastJob);
-        return lastJob;
-    }
-
-    public boolean hasFinishedJobs() {
-        return ! finishedJobs.isEmpty();
-    }
-
-    public synchronized void addFinishedJob(final BatchJob job) {
-        finishedJobs.add(job);
     }
 
     public synchronized void finish() {
@@ -126,6 +96,11 @@ final public class BatchMonitor extends GaswMonitor {
             final Job job = jobDAO.getJobByID(jobID);
 
             if (job.getStatus() != status) {
+                System.err.println("je met le job sur " + status);
+                if (status == GaswStatus.RUNNING) {
+                    job.setDownload(new Date());
+                }
+
                 job.setStatus(status);
                 jobDAO.update(job);
             }
