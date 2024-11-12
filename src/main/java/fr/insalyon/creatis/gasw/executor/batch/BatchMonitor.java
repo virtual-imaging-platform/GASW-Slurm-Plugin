@@ -18,8 +18,6 @@ import lombok.extern.log4j.Log4j;
 @Log4j
 final public class BatchMonitor extends GaswMonitor {
 
-    private static BatchMonitor instance;
-
     @Getter @Setter
     private BatchManager        manager;
     private boolean 		    stop;
@@ -84,11 +82,8 @@ final public class BatchMonitor extends GaswMonitor {
     }
 
     public synchronized void finish() {
-        if (instance != null) {
-            log.trace("Monitor is off !");
-            instance.stop = true;
-            instance = null;
-        }
+        log.trace("Monitor is off !");
+        stop = true;
     }
 
     public void updateJob(final String jobID, final GaswStatus status) {
@@ -96,7 +91,6 @@ final public class BatchMonitor extends GaswMonitor {
             final Job job = jobDAO.getJobByID(jobID);
 
             if (job.getStatus() != status) {
-                System.err.println("je met le job sur " + status);
                 if (status == GaswStatus.RUNNING) {
                     job.setDownload(new Date());
                 }
