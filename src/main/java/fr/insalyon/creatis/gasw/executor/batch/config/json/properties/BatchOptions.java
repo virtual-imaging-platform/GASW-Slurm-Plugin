@@ -23,9 +23,9 @@ public class BatchOptions {
     @JsonProperty(value = "statusRetryWaitInMillis")
     private int statusRetryWait = 10;
 
-    /* By default the system use slurm */
-    @JsonProperty(value = "usePBS")
-    private boolean usePBS = false;
+    /* By default the system uses slurm */
+    @JsonProperty(value = "batchEngine")
+    private BatchEngines batchEngine = BatchEngines.SLURM;
 
     @JsonProperty("timeToBeReadyInSeconds")
     private int timeToBeReady = 120;

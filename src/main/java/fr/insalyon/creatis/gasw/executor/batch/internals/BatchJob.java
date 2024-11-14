@@ -2,13 +2,9 @@ package fr.insalyon.creatis.gasw.executor.batch.internals;
 
 import fr.insalyon.creatis.gasw.GaswException;
 import fr.insalyon.creatis.gasw.execution.GaswStatus;
+import fr.insalyon.creatis.gasw.executor.batch.config.json.properties.BatchEngines;
 import fr.insalyon.creatis.gasw.executor.batch.internals.commands.RemoteCommand;
-import fr.insalyon.creatis.gasw.executor.batch.internals.commands.RemoteCommandAlternative;
 import fr.insalyon.creatis.gasw.executor.batch.internals.commands.items.Cat;
-import fr.insalyon.creatis.gasw.executor.batch.internals.commands.items.Qsub;
-import fr.insalyon.creatis.gasw.executor.batch.internals.commands.items.Sbatch;
-import fr.insalyon.creatis.gasw.executor.batch.internals.commands.items.Scontrol;
-import fr.insalyon.creatis.gasw.executor.batch.internals.commands.items.Tracejob;
 import fr.insalyon.creatis.gasw.executor.batch.internals.terminal.RemoteFile;
 import fr.insalyon.creatis.gasw.executor.batch.internals.terminal.RemoteOutput;
 import fr.insalyon.creatis.gasw.executor.batch.internals.terminal.RemoteTerminal;
@@ -73,11 +69,8 @@ public class BatchJob {
     }
 
     public void submit() throws GaswException {
-        final boolean isPBS = data.getConfig().getOptions().isUsePBS();
-        final RemoteCommandAlternative<Qsub, Sbatch> alternative = new RemoteCommandAlternative<>(isPBS, 
-            Qsub.class, Sbatch.class,
-            data.getWorkingDir() + data.getJobID() + ".batch");
-        final RemoteCommand command = alternative.getCommand();
+        final BatchEngines engine = data.getConfig().getOptions().getBatchEngine();
+        final RemoteCommand command = engine.getSubmit(data.getWorkingDir() + data.getJobID() + ".batch");
 
         try {
             command.execute(data.getConfig());
@@ -86,7 +79,7 @@ public class BatchJob {
                 throw new GaswException("Command failed !");
             }
             data.setBatchJobID(command.result());
-            log.debug("Job ID inside the Cluter : " + command.result());
+            log.debug("Job ID inside the Cluster : " + command.result());
             
         } catch (GaswException e) {
             log.error("Failed to submit the job " + getData().getJobID());
@@ -130,10 +123,8 @@ public class BatchJob {
     }
 
     private GaswStatus getStatusRequest() {
-        final boolean isPBS = data.getConfig().getOptions().isUsePBS();
-        final RemoteCommand command = new RemoteCommandAlternative<Tracejob, Scontrol>(isPBS, 
-            Tracejob.class, Scontrol.class, 
-            data.getBatchJobID()).getCommand();
+        final BatchEngines engine = data.getConfig().getOptions().getBatchEngine();
+        final RemoteCommand command = engine.getStatus(data.getBatchJobID());
         final String result;
 
         try {

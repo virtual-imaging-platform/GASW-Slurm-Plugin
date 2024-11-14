@@ -9,10 +9,13 @@ public class BatchFile {
     final private StringBuilder builder = new StringBuilder(1024);
 
     public StringBuilder build() {
-        if (data.getConfig().getOptions().isUsePBS()) {
-            doPBS();
-        } else {
-            doSlurm();
+        switch (data.getConfig().getOptions().getBatchEngine()) {
+            case PBS:
+                doPBS();
+                break;
+            case SLURM:
+                doSlurm();
+                break;
         }
         doCommon();
 

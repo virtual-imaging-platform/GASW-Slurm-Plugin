@@ -179,7 +179,6 @@ public class BatchManager {
                 synchronized (this) {
                     for (final BatchJob exec : getUnfinishedJobs()) {
                         if (exec.getStatus() == GaswStatus.NOT_SUBMITTED) {
-                            exec.setStatus(GaswStatus.QUEUED);
                             exec.start();
                         }
                     }

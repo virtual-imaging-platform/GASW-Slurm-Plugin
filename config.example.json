@@ -12,6 +12,6 @@
         "statusRetry": 10,
         "statusRetryWaitInMillis": 1000,
         "timeBeReadyInSeconds": 120,
-        "usePBS": false
+        "batchEngine": [PBS/SLURM]
     }
 }

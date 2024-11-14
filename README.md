@@ -27,10 +27,10 @@ It is called from the *engine motor* and then utilised in completition of [GASW]
 
 ### Prerequisite
 To run this plugin you need to use at least **Java 21** runtime environnement.  
-You should also provide **config.json** file witch contain the information about the plugin it self (the location shall be *./conf/conf_batch.conf*).  
+You should also provide **config.json** file which contains the information about the plugin it self (the location shall be *./conf/conf_batch.conf*).  
 
 ### Working
-To deal with PBS and Slurm we use an SSH connection witch replace the API of the Kubernetes plugin for example.  
+To deal with PBS and Slurm we use an SSH connection which replace the API of the Kubernetes plugin for example.  
 
 ## Code
 ### Structure
@@ -39,6 +39,6 @@ This a figma scheme of the global structure of the classes of the project.
 ![alt text](scheme.png)
 
 ### Updates
-If you want to update the code you might easily what you want.  
-Also if a command output changes and the plugin do not work anymore you can just have a look inside *internals/command/items/mybrokenjava.java* and adapt the result function.  
+If you want to update the code you might easily do what you want.  
+Also if a command output changes and the plugin does not work anymore you can just have a look inside *internals/command/items/mybrokenjava.java* and adapt the result function.  
 There is some little parsing tools inherit from the **RemoteStream** class.  
