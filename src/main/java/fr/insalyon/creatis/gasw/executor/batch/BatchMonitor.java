@@ -56,7 +56,7 @@ final public class BatchMonitor extends GaswMonitor {
                         new BatchOutputParser(job).start();
 
                     } else if (status == GaswStatus.RUNNING) {
-                        updateJob(job.getData().getJobID(), status);
+                        updateJob(daoJob, status);
                     }
                 }
                 Thread.sleep(GaswConfiguration.getInstance().getDefaultSleeptime());
@@ -86,10 +86,8 @@ final public class BatchMonitor extends GaswMonitor {
         stop = true;
     }
 
-    public void updateJob(final String jobID, final GaswStatus status) {
+    public void updateJob(final Job job, final GaswStatus status) {
         try {
-            final Job job = jobDAO.getJobByID(jobID);
-
             if (job.getStatus() != status) {
                 if (status == GaswStatus.RUNNING) {
                     job.setDownload(new Date());

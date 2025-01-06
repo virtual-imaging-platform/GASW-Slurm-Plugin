@@ -31,7 +31,7 @@ public class BatchManager {
     final private String            workingDir;
     final private List<BatchJob>    jobs = new ArrayList<>();
 
-    private boolean inited = false;
+    private boolean initialized = false;
     private Boolean end;
 
     public BatchManager(final String workflowId, final BatchConfig config) {
@@ -45,7 +45,7 @@ public class BatchManager {
             checkRemoteDirs();
             checkLocalOutputsDir();
 
-            inited = true;
+            initialized = true;
         } catch (GaswException e) {
             log.error("Failed to init the batch manager !");
         }
@@ -66,7 +66,8 @@ public class BatchManager {
             command.execute(config);
 
             if (command.failed()) {
-                throw new GaswException("Failed to create the remotes dirs !");
+                log.error("Failed to create the remotes dirs: " + command.getCommand());
+                throw new GaswException("Failed to create the remotes dirs: " + command.getCommand());
             }
         }
     }
@@ -172,7 +173,7 @@ public class BatchManager {
         }
 
         private void loop() throws InterruptedException, GaswException {
-            while (inited != true) {
+            while (initialized != true) {
                 sleep();
             }
             while (end == false) {

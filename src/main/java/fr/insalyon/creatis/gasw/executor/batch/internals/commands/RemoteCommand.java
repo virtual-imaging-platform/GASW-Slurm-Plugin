@@ -10,6 +10,7 @@ import lombok.RequiredArgsConstructor;
 @RequiredArgsConstructor
 public abstract class RemoteCommand {
 
+    @Getter
     final private String command;
 
     @Getter

@@ -174,8 +174,13 @@ public class BatchJob {
 
             if (rawStatus != GaswStatus.UNDEFINED) {
                 return rawStatus;
+            } else {
+                try {
+                    Thread.sleep(data.getConfig().getOptions().getStatusRetryWait());
+                } catch (InterruptedException e) {
+                    log.trace(e);
+                }
             }
-            Utils.sleepNException(data.getConfig().getOptions().getStatusRetryWait());
         }
         return GaswStatus.STALLED;
     }

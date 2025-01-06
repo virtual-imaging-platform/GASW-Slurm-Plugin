@@ -22,7 +22,7 @@ public class BatchOutputParser extends GaswOutputParser {
     public GaswOutput getGaswOutput() throws GaswException {
         final File stdOut = getAppStdFile(GaswConstants.OUT_EXT, GaswConstants.OUT_ROOT);
         final File stdErr = getAppStdFile(GaswConstants.ERR_EXT, GaswConstants.ERR_ROOT);
-        GaswExitCode gaswExitCode = GaswExitCode.EXECUTION_CANCELED;
+        GaswExitCode gaswExitCode;
         int exitCode;
 
         job.download();
