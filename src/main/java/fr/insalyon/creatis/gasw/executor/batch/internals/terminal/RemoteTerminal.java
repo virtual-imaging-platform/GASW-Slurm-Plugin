@@ -107,7 +107,7 @@ public class RemoteTerminal {
         }
     }
 
-    public RemoteOutput executeCommand(final String command) {
+    private RemoteOutput executeCommand(final String command) {
         try (ByteArrayOutputStream stdout = new ByteArrayOutputStream();
                 ByteArrayOutputStream stderr = new ByteArrayOutputStream();
                 ChannelExec channel = session.createExecChannel(command)) {
@@ -125,7 +125,7 @@ public class RemoteTerminal {
         }
     }
 
-    public static RemoteOutput oneCommand(final BatchConfig config, final String command) {
+    public RemoteOutput oneCommand(final String command) {
         final RemoteTerminal term = new RemoteTerminal(config);
         final RemoteOutput result;
 

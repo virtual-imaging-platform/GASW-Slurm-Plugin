@@ -17,7 +17,7 @@ public abstract class RemoteCommand {
     private RemoteOutput output;
 
     public RemoteCommand execute(final BatchConfig config) throws GaswException {
-        output = RemoteTerminal.oneCommand(config, command);
+        output = new RemoteTerminal(config).oneCommand(command);
         return this;
     }
 

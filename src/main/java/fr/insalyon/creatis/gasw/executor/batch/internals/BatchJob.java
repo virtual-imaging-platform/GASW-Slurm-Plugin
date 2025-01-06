@@ -29,7 +29,7 @@ public class BatchJob {
         final BatchFile batchFile = new BatchFile(data);
         final RemoteOutput output;
 
-        output = RemoteTerminal.oneCommand(data.getConfig(), "echo -en '" + batchFile.build().toString() + "' > "
+        output = new RemoteTerminal(data.getConfig()).oneCommand("echo -en '" + batchFile.build().toString() + "' > "
                 + data.getWorkingDir() + data.getJobID() + ".batch");
 
         if (output == null || output.getExitCode() != 0 || ! output.getStderr().getContent().isEmpty()) {
