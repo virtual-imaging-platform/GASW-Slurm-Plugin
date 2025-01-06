@@ -5,9 +5,10 @@ import com.fasterxml.jackson.annotation.JsonProperty;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 
-@Getter @NoArgsConstructor
+@Getter
+@NoArgsConstructor
 public class BatchOptions {
-    
+
     /* value in millis */
     @JsonProperty(value = "commandExecutionTimeoutInMillis")
     private int commandExecutionTimeout = 10;

@@ -14,5 +14,5 @@ public class Tracejob extends RemoteCommand {
         final String[] line = out.getRow(out.getLines().length - 1);
 
         return line[line.length - 1];
-    } 
+    }
 }

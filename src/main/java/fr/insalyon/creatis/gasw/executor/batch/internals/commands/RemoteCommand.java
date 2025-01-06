@@ -9,11 +9,11 @@ import lombok.RequiredArgsConstructor;
 
 @RequiredArgsConstructor
 public abstract class RemoteCommand {
-    
-    final private String    command;
+
+    final private String command;
 
     @Getter
-    private RemoteOutput    output;
+    private RemoteOutput output;
 
     public RemoteCommand execute(final BatchConfig config) throws GaswException {
         output = RemoteTerminal.oneCommand(config, command);

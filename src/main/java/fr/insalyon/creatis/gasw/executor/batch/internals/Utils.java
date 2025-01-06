@@ -4,7 +4,8 @@ import lombok.AccessLevel;
 import lombok.NoArgsConstructor;
 import lombok.extern.log4j.Log4j;
 
-@Log4j @NoArgsConstructor(access = AccessLevel.PRIVATE)
+@Log4j
+@NoArgsConstructor(access = AccessLevel.PRIVATE)
 public class Utils {
 
     public static void sleepNException(final long time) {

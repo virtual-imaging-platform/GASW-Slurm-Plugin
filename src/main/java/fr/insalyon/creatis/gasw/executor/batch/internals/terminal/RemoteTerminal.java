@@ -30,11 +30,11 @@ import lombok.extern.log4j.Log4j;
 @Log4j
 public class RemoteTerminal {
 
-    final private BatchConfig            config;
-    final private BatchCredentials       cred;
+    final private BatchConfig       config;
+    final private BatchCredentials  cred;
 
-    private SshClient               client;
-    private ClientSession           session;
+    private SshClient       client;
+    private ClientSession   session;
 
     public RemoteTerminal(final BatchConfig config) {
         this.config = config;
@@ -61,8 +61,8 @@ public class RemoteTerminal {
 
         try {
             session = client.connect(cred.getUsername(), cred.getHost(), cred.getPort())
-                .verify(config.getOptions().getSshEventTimeout(), TimeUnit.SECONDS)
-                .getClientSession();
+                    .verify(config.getOptions().getSshEventTimeout(), TimeUnit.SECONDS)
+                    .getClientSession();
 
             session.auth().verify(config.getOptions().getSshEventTimeout(), TimeUnit.SECONDS);
 
@@ -71,7 +71,7 @@ public class RemoteTerminal {
             throw new GaswException("Failed to connect to ssh");
         }
     }
-    
+
     public void disconnect() throws GaswException {
         try {
             session.disconnect(11, "Session ended");
@@ -107,19 +107,18 @@ public class RemoteTerminal {
         }
     }
 
-
     public RemoteOutput executeCommand(final String command) {
         try (ByteArrayOutputStream stdout = new ByteArrayOutputStream();
-                 ByteArrayOutputStream stderr = new ByteArrayOutputStream();
-                 ChannelExec channel = session.createExecChannel(command)) {
+                ByteArrayOutputStream stderr = new ByteArrayOutputStream();
+                ChannelExec channel = session.createExecChannel(command)) {
 
-                channel.setOut(stdout);
-                channel.setErr(stderr);
+            channel.setOut(stdout);
+            channel.setErr(stderr);
 
-                channel.open().verify(config.getOptions().getCommandExecutionTimeout(), TimeUnit.SECONDS);
-                channel.waitFor(EnumSet.of(ClientChannelEvent.CLOSED), config.getOptions().getSshEventTimeout());
+            channel.open().verify(config.getOptions().getCommandExecutionTimeout(), TimeUnit.SECONDS);
+            channel.waitFor(EnumSet.of(ClientChannelEvent.CLOSED), config.getOptions().getSshEventTimeout());
 
-                return (new RemoteOutput(stdout.toString(), stderr.toString(), channel.getExitStatus()));
+            return (new RemoteOutput(stdout.toString(), stderr.toString(), channel.getExitStatus()));
         } catch (IOException e) {
             log.error(e);
             return null;

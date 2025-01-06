@@ -15,7 +15,9 @@ import lombok.NoArgsConstructor;
 import lombok.extern.log4j.Log4j;
 import net.xeoh.plugins.base.annotations.PluginImplementation;
 
-@PluginImplementation @NoArgsConstructor @Log4j
+@PluginImplementation
+@NoArgsConstructor
+@Log4j
 public class BatchExecutor implements ExecutorPlugin {
 
     private BatchManager    manager;

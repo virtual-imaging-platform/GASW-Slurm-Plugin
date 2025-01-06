@@ -18,9 +18,10 @@ import lombok.extern.log4j.Log4j;
 @Log4j
 final public class BatchMonitor extends GaswMonitor {
 
-    @Getter @Setter
-    private BatchManager        manager;
-    private boolean 		    stop;
+    @Getter
+    @Setter
+    private BatchManager    manager;
+    private boolean         stop;
 
     public BatchMonitor() {
         super();
@@ -29,11 +30,10 @@ final public class BatchMonitor extends GaswMonitor {
 
     private boolean notRunningJob(GaswStatus s) {
         return s != GaswStatus.RUNNING
-        && s != GaswStatus.QUEUED
-        && s != GaswStatus.UNDEFINED
-        && s != GaswStatus.NOT_SUBMITTED;
+            && s != GaswStatus.QUEUED
+            && s != GaswStatus.UNDEFINED
+            && s != GaswStatus.NOT_SUBMITTED;
     }
-
 
     @Override
     public void run() {
@@ -42,7 +42,7 @@ final public class BatchMonitor extends GaswMonitor {
                 for (final BatchJob job : manager.getUnfinishedJobs()) {
                     final Job daoJob = jobDAO.getJobByID(job.getData().getJobID());
                     final GaswStatus status = job.getStatus();
-                    
+
                     if (notRunningJob(status)) {
                         job.setTerminated(true);
                         if (status == GaswStatus.ERROR || status == GaswStatus.COMPLETED) {
@@ -73,8 +73,8 @@ final public class BatchMonitor extends GaswMonitor {
     @Override
     public synchronized void add(final String jobID, final String symbolicName, final String fileName, final String parameters) throws GaswException {
         final Job job = new Job(jobID, GaswConfiguration.getInstance().getSimulationID(),
-            GaswStatus.QUEUED, symbolicName, fileName, parameters,
-            Constants.EXECUTOR_NAME);
+                GaswStatus.QUEUED, symbolicName, fileName, parameters,
+                Constants.EXECUTOR_NAME);
 
         job.setQueued(new Date());
         add(job);
@@ -104,9 +104,7 @@ final public class BatchMonitor extends GaswMonitor {
     }
 
     @Override
-    protected void kill(Job job) {
-        // to implements
-    }
+    protected void kill(Job job) {}
 
     @Override
     protected void reschedule(Job job) {}

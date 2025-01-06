@@ -10,7 +10,7 @@ import lombok.extern.log4j.Log4j;
 
 @Log4j
 public class ConfigBuilder {
-    
+
     final private String filePath;
 
     public ConfigBuilder(final String filePath) {

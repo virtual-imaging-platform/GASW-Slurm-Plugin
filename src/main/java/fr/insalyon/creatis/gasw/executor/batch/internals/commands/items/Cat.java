@@ -7,7 +7,7 @@ public class Cat extends RemoteCommand {
     public Cat(final String file) {
         super("cat " + file);
     }
-    
+
     public String result() {
         return getOutput().getStdout().getContent();
     }

@@ -12,9 +12,10 @@ import lombok.RequiredArgsConstructor;
  * source: remotepath/remote.txt
  * dest: localpath/file.txt
  */
-@RequiredArgsConstructor @Getter
+@RequiredArgsConstructor
+@Getter
 public class RemoteFile {
 
-    private final String    source;
-    private final String    dest;
+    private final String source;
+    private final String dest;
 }

@@ -13,29 +13,33 @@ import lombok.RequiredArgsConstructor;
 import lombok.Setter;
 import lombok.extern.log4j.Log4j;
 
-@Log4j @RequiredArgsConstructor @Setter
+@Log4j
+@RequiredArgsConstructor
+@Setter
 public class BatchJob {
 
     @Getter
-    final private BatchJobData  data;
+    final private BatchJobData data;
 
     @Getter
-    private boolean             terminated = false;
-    private GaswStatus          status = GaswStatus.NOT_SUBMITTED;
+    private boolean     terminated = false;
+    private GaswStatus  status = GaswStatus.NOT_SUBMITTED;
 
     private void createBatchFile() throws GaswException {
         final BatchFile batchFile = new BatchFile(data);
         final RemoteOutput output;
 
-        output = RemoteTerminal.oneCommand(data.getConfig(), "echo -en '" + batchFile.build().toString() + "' > " + data.getWorkingDir() + data.getJobID() + ".batch");
+        output = RemoteTerminal.oneCommand(data.getConfig(), "echo -en '" + batchFile.build().toString() + "' > "
+                + data.getWorkingDir() + data.getJobID() + ".batch");
 
-        if ( output == null || output.getExitCode() != 0 || ! output.getStderr().getContent().isEmpty()) {
+        if (output == null || output.getExitCode() != 0 || ! output.getStderr().getContent().isEmpty()) {
             throw new GaswException("Impossible to create the batch file");
         }
     }
 
     /**
      * Upload all the data to the job directory.
+     * 
      * @throws GaswException
      */
     public void prepare() throws GaswException {
@@ -80,7 +84,7 @@ public class BatchJob {
             }
             data.setBatchJobID(command.result());
             log.debug("Job ID inside the Cluster : " + command.result());
-            
+
         } catch (GaswException e) {
             log.error("Failed to submit the job " + getData().getJobID());
             throw e;
@@ -143,8 +147,8 @@ public class BatchJob {
     }
 
     public int getExitCode() {
-        final RemoteCommand command = new Cat(data.getWorkingDir() + data .getExitCodePath());
-        
+        final RemoteCommand command = new Cat(data.getWorkingDir() + data.getExitCodePath());
+
         try {
             command.execute(data.getConfig());
 
@@ -153,7 +157,7 @@ public class BatchJob {
             }
             return Integer.parseInt(command.result().trim());
 
-        } catch (GaswException e){
+        } catch (GaswException e) {
             log.error("Can't retrieve exitcode " + e.getMessage());
             return 1;
         }

@@ -8,18 +8,20 @@ import lombok.Getter;
 import lombok.RequiredArgsConstructor;
 import lombok.Setter;
 
-@Getter @Setter @RequiredArgsConstructor
+@Getter
+@Setter
+@RequiredArgsConstructor
 public class BatchJobData {
-    
-    final private String          jobID;
-    final private BatchConfig     config;
+
+    final private String        jobID;
+    final private BatchConfig   config;
 
     // this is the id given by the batch system
-    private String           batchJobID = null;
-    private String           command;
-    private String           workingDir;
-    private List<RemoteFile> filesUpload;
-    private List<RemoteFile> filesDownload;
+    private String              batchJobID = null;
+    private String              command;
+    private String              workingDir;
+    private List<RemoteFile>    filesUpload;
+    private List<RemoteFile>    filesDownload;
 
     public String getExitCodePath() {
         return getJobID() + ".exit";

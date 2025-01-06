@@ -26,7 +26,8 @@ public enum BatchEngines {
     private RemoteCommand buidler(Class<? extends RemoteCommand> toBuild, final String data) {
         try {
             return toBuild.getConstructor(String.class).newInstance(data);
-        } catch (InstantiationException | IllegalAccessException | IllegalArgumentException | InvocationTargetException | NoSuchMethodException e) {
+        } catch (InstantiationException | IllegalAccessException | IllegalArgumentException | InvocationTargetException
+                | NoSuchMethodException e) {
             log.error("Failed to build the command (using batch engines)", e);
         }
         return null;

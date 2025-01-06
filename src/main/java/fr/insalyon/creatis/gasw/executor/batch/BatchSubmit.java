@@ -15,7 +15,8 @@ public class BatchSubmit extends GaswSubmit {
     final private BatchManager manager;
     final private BatchMonitor monitor;
 
-    public BatchSubmit(final GaswInput gaswInput, final BatchMinorStatusGenerator minorStatusServiceGenerator, final BatchManager manager, final BatchMonitor monitor) throws GaswException {
+    public BatchSubmit(final GaswInput gaswInput, final BatchMinorStatusGenerator minorStatusServiceGenerator, 
+            final BatchManager manager, final BatchMonitor monitor) throws GaswException {
         super(gaswInput, minorStatusServiceGenerator);
         scriptName = generateScript();
         this.manager = manager;
@@ -25,13 +26,12 @@ public class BatchSubmit extends GaswSubmit {
     @Override
     public String submit() throws GaswException {
         final String jobID = scriptName.substring(0, scriptName.lastIndexOf("."));
-        final String params = gaswInput.getParameters().stream()
-            .collect(Collectors.joining(" "));
+        final String params = gaswInput.getParameters().stream().collect(Collectors.joining(" "));
 
         monitor.add(jobID, gaswInput.getExecutableName(), jobID, params.toString());
         manager.submitter(jobID, "bash " + GaswConstants.SCRIPT_ROOT + "/" + scriptName);
 
-        if ( ! monitor.isAlive()) {
+        if (!monitor.isAlive()) {
             monitor.start();
         }
         return jobID;

@@ -22,16 +22,17 @@ import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.extern.log4j.Log4j;
 
-@Getter @Log4j
+@Getter
+@Log4j
 public class BatchManager {
-    
+
     final private String            workflowId;
-    final private BatchConfig            config;
+    final private BatchConfig       config;
     final private String            workingDir;
     final private List<BatchJob>    jobs = new ArrayList<>();
 
-    private boolean                 inited = false;
-    private Boolean                 end;
+    private boolean inited = false;
+    private Boolean end;
 
     public BatchManager(final String workflowId, final BatchConfig config) {
         this.workflowId = workflowId;
@@ -72,14 +73,14 @@ public class BatchManager {
 
     public void checkLocalOutputsDir() {
         final String[] dirs = { GaswConstants.OUT_ROOT, GaswConstants.ERR_ROOT, "./cache" };
-        
+
         Arrays.stream(dirs)
-            .map(File::new)
-            .forEach(dir -> {
-                if ( ! dir.exists()) {
-                    dir.mkdirs();
-                }
-            });
+                .map(File::new)
+                .forEach(dir -> {
+                    if (!dir.exists()) {
+                        dir.mkdirs();
+                    }
+                });
     }
 
     /**
@@ -93,7 +94,6 @@ public class BatchManager {
             if (remoteCommand.execute(config).failed()) {
                 throw new GaswException("");
             }
-            
         } catch (GaswException e) {
             log.error("Failed to destroy the batch manager !");
         }
@@ -143,8 +143,8 @@ public class BatchManager {
 
     public List<BatchJob> getUnfinishedJobs() {
         return jobs.stream()
-               .filter(job -> !job.isTerminated())
-               .collect(Collectors.toCollection(ArrayList::new));
+                .filter(job -> !job.isTerminated())
+                .collect(Collectors.toCollection(ArrayList::new));
     }
 
     @NoArgsConstructor

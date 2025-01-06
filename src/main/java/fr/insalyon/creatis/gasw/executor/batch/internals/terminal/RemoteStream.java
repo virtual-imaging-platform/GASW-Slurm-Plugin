@@ -4,10 +4,11 @@ import fr.insalyon.creatis.gasw.executor.batch.config.Constants;
 import lombok.Getter;
 import lombok.RequiredArgsConstructor;
 
-@RequiredArgsConstructor @Getter
+@RequiredArgsConstructor
+@Getter
 public class RemoteStream {
-    
-    final String    content;
+
+    final String content;
 
     public String[] getLines() {
         return content.split("\n");
@@ -16,7 +17,7 @@ public class RemoteStream {
     /**
      * @return the splited row(index)
      */
-    public String[] getRow(final int index){
+    public String[] getRow(final int index) {
         final String[] splited = getLines();
 
         if (index >= splited.length) {

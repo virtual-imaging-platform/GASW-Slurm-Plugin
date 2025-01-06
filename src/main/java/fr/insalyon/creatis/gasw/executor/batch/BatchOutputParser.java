@@ -9,9 +9,9 @@ import fr.insalyon.creatis.gasw.GaswOutput;
 import fr.insalyon.creatis.gasw.execution.GaswOutputParser;
 import fr.insalyon.creatis.gasw.executor.batch.internals.BatchJob;
 
-public class BatchOutputParser extends GaswOutputParser{
+public class BatchOutputParser extends GaswOutputParser {
 
-    final private BatchJob  job;
+    final private BatchJob job;
 
     public BatchOutputParser(final BatchJob job) {
         super(job.getData().getJobID());
